@@ -6,11 +6,75 @@ interface Props {
   description?: string;
 }
 
-const { title, description = 'Yayasan Alhidayah — Lembaga sosial & keagamaan dari Bandung Barat. Wakaf mushaf, kafarat, dan bantuan sosial.' } = Astro.props;
+const { title, description = 'Yayasan Alhidayah — Lembaga sosial & keagamaan dari Bandung Barat. Wakaf mushaf Al-Quran, kafarat, dan bantuan sosial untuk fakir miskin, anak yatim, dan penggiat dakwah.' } = Astro.props;
+const canonicalUrl = new URL(Astro.url.pathname, 'https://yayasanalhidayah.com').href;
+const ogImage = 'https://yayasanalhidayah.com/hero-1.jpg';
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": ["Organization", "NGO"],
+      "@id": "https://yayasanalhidayah.com/#organization",
+      "name": "Yayasan Alhidayah",
+      "alternateName": "Alhidayah Foundation",
+      "url": "https://yayasanalhidayah.com",
+      "logo": "https://yayasanalhidayah.com/logo-clear.png",
+      "description": "Lembaga sosial dan keagamaan berbadan hukum dari Bandung Barat yang bergerak di bidang wakaf mushaf Al-Quran, kafarat, dan bantuan sosial.",
+      "foundingDate": "2025",
+      "legalName": "Yayasan Alhidayah",
+      "taxID": "31.714.301.4-421.000",
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "Kampung Pamokokolan RT 03/01, Desa Bunijaya",
+        "addressLocality": "Gununghalu",
+        "addressRegion": "Kabupaten Bandung Barat",
+        "addressCountry": "ID"
+      },
+      "geo": {
+        "@type": "GeoCoordinates",
+        "latitude": -6.89,
+        "longitude": 107.34
+      },
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "telephone": "+62-851-7700-7772",
+        "contactType": "customer service",
+        "availableLanguage": "Indonesian"
+      },
+      "sameAs": [
+        "https://www.instagram.com/@aksibaikalhidayah",
+        "https://www.facebook.com/Yas%20Alhidayah"
+      ],
+      "areaServed": {
+        "@type": "AdministrativeArea",
+        "name": "Kabupaten Bandung Barat, Jawa Barat, Indonesia"
+      }
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://yayasanalhidayah.com/#website",
+      "url": "https://yayasanalhidayah.com",
+      "name": "Yayasan Alhidayah",
+      "publisher": { "@id": "https://yayasanalhidayah.com/#organization" },
+      "inLanguage": "id-ID"
+    },
+    {
+      "@type": "WebPage",
+      "@id": canonicalUrl,
+      "url": canonicalUrl,
+      "name": title,
+      "description": description,
+      "isPartOf": { "@id": "https://yayasanalhidayah.com/#website" },
+      "about": { "@id": "https://yayasanalhidayah.com/#organization" },
+      "inLanguage": "id-ID"
+    }
+  ]
+};
 ---
 
 <!doctype html>
-<html lang="id">
+<html lang="id" dir="ltr">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -18,25 +82,67 @@ const { title, description = 'Yayasan Alhidayah — Lembaga sosial & keagamaan d
   <meta name="description" content={description} />
 
   <!-- SEO -->
-  <meta name="robots" content="index, follow" />
-  <link rel="canonical" href={Astro.url.href} />
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+  <link rel="canonical" href={canonicalUrl} />
+  <link rel="alternate" hreflang="id" href={canonicalUrl} />
+  <link rel="alternate" hreflang="x-default" href={canonicalUrl} />
+
+  <!-- GEO targeting -->
+  <meta name="geo.region" content="ID-JB" />
+  <meta name="geo.placename" content="Kabupaten Bandung Barat" />
+  <meta name="geo.position" content="-6.89;107.34" />
+  <meta name="ICBM" content="-6.89, 107.34" />
+
+  <!-- Open Graph -->
   <meta property="og:title" content={title} />
   <meta property="og:description" content={description} />
   <meta property="og:type" content="website" />
-  <meta property="og:url" content={Astro.url.href} />
+  <meta property="og:url" content={canonicalUrl} />
   <meta property="og:locale" content="id_ID" />
+  <meta property="og:site_name" content="Yayasan Alhidayah" />
+  <meta property="og:image" content={ogImage} />
+  <meta property="og:image:width" content="1800" />
+  <meta property="og:image:height" content="1100" />
+  <meta property="og:image:alt" content="Kegiatan Yayasan Alhidayah — Wakaf & Kafarat" />
+
+  <!-- Twitter -->
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content={title} />
   <meta name="twitter:description" content={description} />
+  <meta name="twitter:image" content={ogImage} />
+
+  <!-- Structured Data -->
+  <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+
   <link rel="icon" type="image/png" href="/logo.png" />
 
-  <!-- Fonts -->
+  <!-- Preload LCP image -->
+  <link rel="preload" as="image" href="/hero-1.jpg" fetchpriority="high" />
+
+  <!-- Fonts — critical subset preloaded, rest async -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
-    href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300;12..96,400;12..96,500;12..96,600;12..96,700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap"
-    rel="stylesheet"
+    rel="preload"
+    as="style"
+    href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+    onload="this.onload=null;this.rel='stylesheet'"
   />
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" /></noscript>
+  <link
+    rel="preload"
+    as="style"
+    href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600&display=swap"
+    onload="this.onload=null;this.rel='stylesheet'"
+  />
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600&display=swap" /></noscript>
+  <link
+    rel="preload"
+    as="style"
+    href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap"
+    onload="this.onload=null;this.rel='stylesheet'"
+  />
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" /></noscript>
 
   <!-- Theme init (prevent flash) -->
   <script is:inline>
@@ -117,6 +223,21 @@ const { title, description = 'Yayasan Alhidayah — Lembaga sosial & keagamaan d
       }, { threshold: 0.5 });
 
       counters.forEach(function(el) { cio.observe(el); });
+    })();
+  </script>
+
+  <!-- Lazy image skeleton reveal -->
+  <script is:inline>
+    (function() {
+      document.querySelectorAll('img[loading="lazy"]').forEach(function(img) {
+        function reveal() {
+          img.classList.add('loaded');
+          var parent = img.closest('.skeleton');
+          if (parent) parent.classList.remove('skeleton');
+        }
+        if (img.complete) reveal();
+        else img.addEventListener('load', reveal);
+      });
     })();
   </script>
 

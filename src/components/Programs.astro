@@ -40,8 +40,8 @@ const items = [
     <div class="programs-grid">
       {items.map((p) => (
         <article class="program-card" data-reveal>
-          <div class="program-img">
-            <img src={p.src} alt={p.title} loading="lazy" width="800" height="600" />
+          <div class="program-img skeleton">
+            <img src={p.src} alt={p.title} loading="lazy" decoding="async" width="800" height="600" />
             <span class="program-tag">{p.tag}</span>
           </div>
           <div class="program-body">

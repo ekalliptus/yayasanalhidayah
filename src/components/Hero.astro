@@ -17,6 +17,8 @@ const heroImages = [
             src={img.src}
             alt={img.alt}
             loading={i === 0 ? 'eager' : 'lazy'}
+            fetchpriority={i === 0 ? 'high' : undefined}
+            decoding={i === 0 ? 'sync' : 'async'}
             width="1800"
             height="1100"
             data-hero-slide={i}

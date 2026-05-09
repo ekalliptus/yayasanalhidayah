@@ -36,6 +36,15 @@ const testimonials = [
     quote: 'Alhamdulillah, melalui Yayasan Alhidayah saya merasa <em>dimudahkan</em> menunaikan kafarat dengan benar. Terima kasih telah menjadi jalan taubat dan <em>kepedulian</em> kepada sesama.',
   },
 ];
+
+function sanitizeQuote(html: string): string {
+  return html
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/&lt;em&gt;/g, '<em>')
+    .replace(/&lt;\/em&gt;/g, '</em>');
+}
 ---
 
 <section class="testimonial section-pad" id="testimoni">
@@ -71,7 +80,7 @@ const testimonials = [
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 3 7h7l-5.5 4.5L18 21l-6-4-6 4 1.5-7.5L2 9h7z"/></svg>
               ))}
             </div>
-            <blockquote set:html={t.quote} />
+            <blockquote set:html={sanitizeQuote(t.quote)} />
           </div>
         ))}
       </div>
