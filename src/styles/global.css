@@ -545,10 +545,9 @@ section { position: relative; }
   animation: counter-pop 500ms var(--ease-emph);
 }
 @keyframes counter-pop {
-  0% { transform: scale(1); }
-  40% { transform: scale(1.15); }
-  70% { transform: scale(0.95); }
-  100% { transform: scale(1); }
+  0% { opacity: 1; }
+  40% { opacity: 0.85; }
+  100% { opacity: 1; }
 }
 [data-theme="dark"] .hero-meta-item .num { color: var(--brand-3); }
 .hero-meta-item .lbl {
@@ -1286,8 +1285,8 @@ section { position: relative; }
   opacity: 1;
 }
 
-/* content-visibility for below-fold sections */
-.about, .why, .testimonial, .foot {
+/* content-visibility for far-below-fold sections only */
+.why, .testimonial, .foot {
   content-visibility: auto;
   contain-intrinsic-size: auto 600px;
 }
