@@ -843,6 +843,31 @@ section { position: relative; }
   .program-body p { font-size: 14px; }
 }
 
+/* Upcoming program card */
+.program-upcoming {
+  opacity: 0.7;
+  border-style: dashed;
+}
+.program-upcoming:hover {
+  transform: none;
+  box-shadow: none;
+  cursor: default;
+}
+.upcoming-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-alt);
+  color: var(--ink-3);
+}
+[data-theme="dark"] .upcoming-placeholder { background: var(--paper); }
+.upcoming-label {
+  color: var(--ink-3);
+  border-bottom: none;
+  font-style: italic;
+  pointer-events: none;
+}
+
 /* Testimonials */
 .testimonial {
   background: var(--bg-alt);

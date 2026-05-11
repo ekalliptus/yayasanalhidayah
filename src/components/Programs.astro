@@ -1,27 +1,4 @@
 ---
-const items = [
-  {
-    tag: 'Wakaf',
-    title: 'Mushaf Orang Tua',
-    desc: "Mushaf Al-Qur'an khusus untuk orang tua dengan ukuran huruf yang lapang dan nyaman dibaca, didistribusikan ke masjid dan majelis sepuh.",
-    src: '/program/program-mushaf-orangtua.webp',
-    href: 'https://yayasanalhidayah.com/mushaf-orangtua',
-  },
-  {
-    tag: 'Wakaf',
-    title: 'Mushaf Pelosok',
-    desc: "Distribusi mushaf ke desa-desa pelosok, TPQ, dan pesantren yang masih sangat membutuhkan akses Al-Qur'an untuk pembelajaran harian.",
-    src: '/program/program-mushaf-pelosok.webp',
-    href: 'https://yayasanalhidayah.com/mushaf-pelosok',
-  },
-  {
-    tag: 'Tebusan',
-    title: 'Kafarat',
-    desc: 'Penyaluran kafarat sesuai syariat — langsung kepada fakir miskin, dengan pendampingan dan dokumentasi proses sampai diterima.',
-    src: '/program/program-kafarat.webp',
-    href: 'https://yayasanalhidayah.com/kafarat-rfi',
-  },
-];
 ---
 
 <section class="section-pad" id="program">
@@ -38,21 +15,45 @@ const items = [
       </p>
     </div>
     <div class="programs-grid">
-      {items.map((p) => (
-        <article class="program-card" data-reveal>
-          <div class="program-img skeleton">
-            <img src={p.src} alt={p.title} loading="lazy" decoding="async" width="800" height="600" />
-            <span class="program-tag">{p.tag}</span>
-          </div>
-          <div class="program-body">
-            <h3>{p.title}</h3>
-            <p>{p.desc}</p>
-            <a href={p.href} class="program-cta" target="_blank" rel="noopener noreferrer">
-              Titipkan amanah <span class="arrow"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
-            </a>
-          </div>
-        </article>
-      ))}
+      <article class="program-card" data-reveal>
+        <div class="program-img skeleton">
+          <img src="/program/program-kafarat.webp" alt="Kafarat" loading="lazy" decoding="async" width="800" height="600" />
+          <span class="program-tag">Tebusan</span>
+        </div>
+        <div class="program-body">
+          <h3>Kafarat</h3>
+          <p>Pernahkah mengucap sumpah atas nama Allah SWT dan melanggarnya? Atau melakukan jima' siang hari di bulan Ramadhan? Tunaikan Kafaratmu Segera...!! Jangan biarkan kesalahan masa lalu tetap menghantui — sekarang adalah waktu memperbaiki diri.</p>
+          <a href="https://donasi.yayasanalhidayah.com/campaign/sempurnakan-taubatmu-tunaikan-kafarat" class="program-cta" target="_blank" rel="noopener noreferrer">
+            Titipkan amanah <span class="arrow"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+          </a>
+        </div>
+      </article>
+      <article class="program-card program-upcoming" data-reveal>
+        <div class="program-img upcoming-placeholder">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>
+          </svg>
+          <span class="program-tag">Segera Hadir</span>
+        </div>
+        <div class="program-body">
+          <h3>Segera Hadir</h3>
+          <p>Program baru sedang dalam persiapan. Insya Allah akan segera hadir untuk memperluas jangkauan kebaikan bersama.</p>
+          <span class="program-cta upcoming-label">Coming Soon</span>
+        </div>
+      </article>
+      <article class="program-card program-upcoming" data-reveal>
+        <div class="program-img upcoming-placeholder">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>
+          </svg>
+          <span class="program-tag">Segera Hadir</span>
+        </div>
+        <div class="program-body">
+          <h3>Segera Hadir</h3>
+          <p>Program baru sedang dalam persiapan. Insya Allah akan segera hadir untuk memperluas jangkauan kebaikan bersama.</p>
+          <span class="program-cta upcoming-label">Coming Soon</span>
+        </div>
+      </article>
     </div>
   </div>
 </section>
