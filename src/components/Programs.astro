@@ -1,4 +1,5 @@
 ---
+import { featuredPrograms, donasiUrl } from '../data/programs';
 ---
 
 <section class="section-pad" id="program">
@@ -15,32 +16,21 @@
       </p>
     </div>
     <div class="programs-grid">
-      <article class="program-card" data-reveal>
-        <div class="program-img skeleton">
-          <img src="/program/program-kafarat.webp" alt="Kafarat" loading="lazy" decoding="async" width="800" height="600" />
-          <span class="program-tag">Tebusan</span>
-        </div>
-        <div class="program-body">
-          <h3>Kafarat</h3>
-          <p>Pernahkah mengucap sumpah atas nama Allah SWT dan melanggarnya? Atau melakukan jima' siang hari di bulan Ramadhan? Tunaikan Kafaratmu Segera...!! Jangan biarkan kesalahan masa lalu tetap menghantui — sekarang adalah waktu memperbaiki diri.</p>
-          <a href="https://donasi.yayasanalhidayah.com/campaign/sempurnakan-taubatmu-tunaikan-kafarat" class="program-cta" target="_blank" rel="noopener noreferrer">
-            Titipkan amanah <span class="arrow"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
-          </a>
-        </div>
-      </article>
-      <article class="program-card" data-reveal>
-        <div class="program-img skeleton">
-          <img src="/program/program-fidyah.webp" alt="Fidyah" loading="lazy" decoding="async" width="800" height="600" />
-          <span class="program-tag">Tebusan</span>
-        </div>
-        <div class="program-body">
-          <h3>Fidyah</h3>
-          <p>Tidak mampu berpuasa karena sakit berkepanjangan atau usia lanjut? Tunaikan fidyah Anda — kami salurkan langsung kepada fakir miskin yang berhak menerimanya.</p>
-          <a href="https://donasi.yayasanalhidayah.com/campaign/tunaikan-fidyah-bersama-alhidayah" class="program-cta" target="_blank" rel="noopener noreferrer">
-            Titipkan amanah <span class="arrow"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
-          </a>
-        </div>
-      </article>
+      {featuredPrograms.map((p) => (
+        <article class="program-card" data-reveal>
+          <div class="program-img skeleton">
+            <img src={p.image} alt={p.alt} loading="lazy" decoding="async" width="800" height="600" />
+            <span class="program-tag">{p.tag}</span>
+          </div>
+          <div class="program-body">
+            <h3>{p.title}</h3>
+            <p>{p.description}</p>
+            <a href={donasiUrl(p.slug)} class="program-cta" target="_blank" rel="noopener noreferrer">
+              Titipkan amanah <span class="arrow"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+            </a>
+          </div>
+        </article>
+      ))}
       <article class="program-card program-upcoming" data-reveal>
         <div class="program-img upcoming-placeholder">
           <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
@@ -54,6 +44,12 @@
           <span class="program-cta upcoming-label">Coming Soon</span>
         </div>
       </article>
+    </div>
+    <div class="programs-foot" data-reveal>
+      <a href="/program" class="btn btn-ghost">
+        Lihat Semua Program
+        <span class="arrow"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+      </a>
     </div>
   </div>
 </section>

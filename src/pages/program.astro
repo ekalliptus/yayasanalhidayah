@@ -1,0 +1,91 @@
+---
+import Base from '../layouts/Base.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import { programs, donasiUrl, categories } from '../data/programs';
+---
+
+<Base title="Program Donasi — Yayasan Alhidayah" description="Daftar lengkap program donasi Yayasan Alhidayah: Kafarat, Fidyah, dan program kemanusiaan. Titipkan amanah Anda hari ini.">
+  <Header base="/" />
+
+  <section class="section-pad program-page">
+    <div class="container">
+      <div class="program-page-head" data-reveal>
+        <nav class="breadcrumb" aria-label="Breadcrumb">
+          <a href="/">Beranda</a>
+          <span class="sep">/</span>
+          <span aria-current="page">Program</span>
+        </nav>
+        <div class="eyebrow"><span class="section-num">Daftar Program Donasi</span></div>
+        <h1 class="display">
+          Semua program yang<br/>bisa Anda <em>titipkan</em>.
+        </h1>
+        <p class="lede program-page-lede">
+          Pilih kategori untuk menyaring program, atau lihat semua sekaligus. Setiap program adalah jembatan antara niat baik Anda dan mereka yang sedang menunggu bantuan.
+        </p>
+        <div class="category-filter" role="tablist" aria-label="Filter kategori program">
+          <button class="filter-chip is-active" role="tab" aria-selected="true" data-filter="all">
+            Semua
+            <span class="count">{programs.length}</span>
+          </button>
+          {categories.map((c) => (
+            <button class="filter-chip" role="tab" aria-selected="false" data-filter={c}>
+              {c}
+              <span class="count">{programs.filter((p) => p.category === c).length}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div class="programs-grid" id="programs-grid">
+        {programs.map((p) => (
+          <article class="program-card" data-reveal data-category={p.category}>
+            <div class="program-img skeleton">
+              <img src={p.image} alt={p.alt} loading="lazy" decoding="async" width="800" height="600" />
+              <span class="program-tag">{p.tag}</span>
+            </div>
+            <div class="program-body">
+              <h3>{p.title}</h3>
+              <p>{p.description}</p>
+              <a href={donasiUrl(p.slug)} class="program-cta" target="_blank" rel="noopener noreferrer">
+                Titipkan amanah <span class="arrow"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+              </a>
+            </div>
+          </article>
+        ))}
+      </div>
+
+      <div class="program-empty" id="programs-empty" hidden>
+        <p>Tidak ada program untuk kategori ini.</p>
+      </div>
+    </div>
+  </section>
+
+  <Footer base="/" />
+
+  <script is:inline>
+    (function() {
+      var chips = document.querySelectorAll('.filter-chip');
+      var cards = document.querySelectorAll('#programs-grid .program-card');
+      var empty = document.getElementById('programs-empty');
+      if (!chips.length || !cards.length) return;
+      function apply(filter) {
+        var visible = 0;
+        cards.forEach(function(c) {
+          var match = filter === 'all' || c.getAttribute('data-category') === filter;
+          c.hidden = !match;
+          if (match) visible++;
+        });
+        if (empty) empty.hidden = visible > 0;
+      }
+      chips.forEach(function(chip) {
+        chip.addEventListener('click', function() {
+          chips.forEach(function(c) { c.classList.remove('is-active'); c.setAttribute('aria-selected', 'false'); });
+          chip.classList.add('is-active');
+          chip.setAttribute('aria-selected', 'true');
+          apply(chip.getAttribute('data-filter'));
+        });
+      });
+    })();
+  </script>
+</Base>

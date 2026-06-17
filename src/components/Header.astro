@@ -1,10 +1,15 @@
 ---
+interface Props {
+  base?: string;
+}
+const { base = '' } = Astro.props;
+const home = base || '#top';
 ---
 
 <header class="nav" id="main-nav">
   <div class="container">
     <div class="nav-inner">
-      <a class="brand" href="#top">
+      <a class="brand" href={home}>
         <picture>
           <source srcset="/logo-clear.webp" type="image/webp" />
           <img class="logo-img" src="/logo-clear.png" alt="Logo Yayasan Alhidayah" width="36" height="36" />
@@ -23,7 +28,7 @@
             <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
           </svg>
         </button>
-        <a class="btn btn-primary nav-donate" href="#program" style="padding: 12px 22px; font-size: 14px;">
+        <a class="btn btn-primary nav-donate" href={`${base}#program`} style="padding: 12px 22px; font-size: 14px;">
           Donasi <span class="arrow"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
         </a>
         <button class="nav-toggle" id="nav-toggle" aria-label="Toggle menu">
@@ -37,11 +42,11 @@
     </div>
   </div>
   <nav class="nav-links" id="nav-links">
-    <a href="#tentang">Tentang</a>
-    <a href="#mengapa">Mengapa Kami</a>
-    <a href="#program">Program</a>
-    <a href="#testimoni">Testimoni</a>
-    <a href="#kontak">Kontak</a>
+    <a href={`${base}#tentang`}>Tentang</a>
+    <a href={`${base}#mengapa`}>Mengapa Kami</a>
+    <a href={`${base}#program`}>Program</a>
+    <a href={`${base}#testimoni`}>Testimoni</a>
+    <a href={`${base}#kontak`}>Kontak</a>
   </nav>
   <div class="nav-backdrop" id="nav-backdrop"></div>
 </header>

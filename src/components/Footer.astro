@@ -1,11 +1,15 @@
 ---
+interface Props {
+  base?: string;
+}
+const { base = '' } = Astro.props;
 ---
 
 <footer class="foot" id="kontak">
   <div class="container">
     <div class="foot-grid">
       <div class="foot-brand">
-        <a class="brand" href="#top">
+        <a class="brand" href={base || '#top'}>
           <picture>
             <source srcset="/logo-clear.webp" type="image/webp" />
             <img class="logo-img" src="/logo-clear.png" alt="Logo Yayasan Alhidayah" width="36" height="36" loading="lazy" decoding="async" />
