@@ -6,33 +6,13 @@ export interface Program {
   image: string;
   alt: string;
   description: string;
-  featured?: boolean;
 }
 
 export const DONASI_BASE = 'https://donasi.yayasanalhidayah.com/campaign';
 export const donasiUrl = (slug: string) => `${DONASI_BASE}/${slug}`;
 
+// Ordered newest-first (matches the DonasiAja admin order, latest campaign on top).
 export const programs: Program[] = [
-  {
-    title: 'Sempurnakan Taubatmu, Tunaikan Kafarat',
-    category: 'Kafarat',
-    tag: 'Tebusan',
-    slug: 'sempurnakan-taubatmu-tunaikan-kafarat',
-    image: '/program/program-kafarat.webp',
-    alt: 'Sempurnakan Taubatmu, Tunaikan Kafarat',
-    description: 'Pernahkah mengucap sumpah atas nama Allah SWT dan melanggarnya? Atau melakukan jima\' siang hari di bulan Ramadhan? Tunaikan Kafaratmu Segera...!! Jangan biarkan kesalahan masa lalu tetap menghantui — sekarang adalah waktu memperbaiki diri.',
-    featured: true,
-  },
-  {
-    title: 'Lunasi Hutang Puasamu, Bayar Fidyahmu!',
-    category: 'Fidyah',
-    tag: 'Tebusan',
-    slug: 'tunaikan-fidyah-bersama-alhidayah',
-    image: '/program/program-fidyah.webp',
-    alt: 'Lunasi Hutang Puasamu, Bayar Fidyahmu!',
-    description: 'Tidak mampu berpuasa karena sakit berkepanjangan atau usia lanjut? Tunaikan fidyah Anda — kami salurkan langsung kepada fakir miskin yang berhak menerimanya.',
-    featured: true,
-  },
   {
     title: 'Kewajiban Itu Tidak Hilang Meski Sudah Lama Berlalu',
     category: 'Kafarat',
@@ -50,6 +30,15 @@ export const programs: Program[] = [
     image: '/program/program-dana-siaga-bencana.webp',
     alt: 'Dana Siaga Bencana',
     description: 'Musibah datang tanpa aba-aba. Bersama Anda, kami siapkan dana siaga agar bantuan logistik, obat, dan kebutuhan pokok bisa bergerak cepat saat bencana terjadi.',
+  },
+  {
+    title: 'Lunasi Hutang Puasamu, Bayar Fidyahmu!',
+    category: 'Fidyah',
+    tag: 'Tebusan',
+    slug: 'tunaikan-fidyah-bersama-alhidayah',
+    image: '/program/program-fidyah.webp',
+    alt: 'Lunasi Hutang Puasamu, Bayar Fidyahmu!',
+    description: 'Tidak mampu berpuasa karena sakit berkepanjangan atau usia lanjut? Tunaikan fidyah Anda — kami salurkan langsung kepada fakir miskin yang berhak menerimanya.',
   },
   {
     title: 'Allah Tidak Menutup Pintu Ampunan, Bahkan untuk Kesalahan yang Berat Sekalipun',
@@ -87,8 +76,18 @@ export const programs: Program[] = [
     alt: 'Tebus Sumpah yang Pernah Kamu Ucap',
     description: 'Pernah bersumpah atas nama Allah lalu melanggarnya? Tebus dengan kafarat yang kami salurkan langsung kepada mereka yang berhak menerimanya.',
   },
+  {
+    title: 'Sempurnakan Taubatmu, Tunaikan Kafarat',
+    category: 'Kafarat',
+    tag: 'Tebusan',
+    slug: 'sempurnakan-taubatmu-tunaikan-kafarat',
+    image: '/program/program-kafarat.webp',
+    alt: 'Sempurnakan Taubatmu, Tunaikan Kafarat',
+    description: 'Pernahkah mengucap sumpah atas nama Allah SWT dan melanggarnya? Atau melakukan jima\' siang hari di bulan Ramadhan? Tunaikan Kafaratmu Segera...!! Jangan biarkan kesalahan masa lalu tetap menghantui — sekarang adalah waktu memperbaiki diri.',
+  },
 ];
 
-export const featuredPrograms = programs.filter((p) => p.featured);
+// Homepage section 03 shows the 3 newest campaigns.
+export const latestPrograms = programs.slice(0, 3);
 
 export const categories = ['Kafarat', 'Fidyah', 'Kemanusiaan'] as const;

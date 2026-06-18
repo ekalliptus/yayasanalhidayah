@@ -1,5 +1,5 @@
 ---
-import { featuredPrograms, donasiUrl } from '../data/programs';
+import { latestPrograms, donasiUrl } from '../data/programs';
 ---
 
 <section class="section-pad" id="program">
@@ -16,7 +16,7 @@ import { featuredPrograms, donasiUrl } from '../data/programs';
       </p>
     </div>
     <div class="programs-grid">
-      {featuredPrograms.map((p) => (
+      {latestPrograms.map((p) => (
         <article class="program-card" data-reveal>
           <div class="program-img skeleton">
             <img src={p.image} alt={p.alt} loading="lazy" decoding="async" width="800" height="600" />
@@ -31,19 +31,6 @@ import { featuredPrograms, donasiUrl } from '../data/programs';
           </div>
         </article>
       ))}
-      <article class="program-card program-upcoming" data-reveal>
-        <div class="program-img upcoming-placeholder">
-          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>
-          </svg>
-          <span class="program-tag">Segera Hadir</span>
-        </div>
-        <div class="program-body">
-          <h3>Segera Hadir</h3>
-          <p>Program baru sedang dalam persiapan. Insya Allah akan segera hadir untuk memperluas jangkauan kebaikan bersama.</p>
-          <span class="program-cta upcoming-label">Coming Soon</span>
-        </div>
-      </article>
     </div>
     <div class="programs-foot" data-reveal>
       <a href="/program" class="btn btn-ghost">
