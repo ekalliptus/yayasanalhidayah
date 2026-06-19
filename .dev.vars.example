@@ -1,0 +1,11 @@
+# Copy to `.dev.vars` (gitignored) for local `astro dev` / `wrangler dev`.
+# platformProxy mirrors these into Astro.locals.runtime.env so server code uses
+# the same path locally as in production.
+PUBLIC_SUPABASE_URL=https://YOUR_REF.supabase.co
+PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOi...
+SUPABASE_URL=https://YOUR_REF.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOi...
+CF_DEPLOY_HOOK_URL=
+CRON_SECRET=local-dev-secret
+# WordPress donation site (campaign source for the Program feature). No trailing slash.
+WP_BASE_URL=https://donasi.yayasanalhidayah.com

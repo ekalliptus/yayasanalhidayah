@@ -1,0 +1,36 @@
+{
+  // Cloudflare Workers config for @astrojs/cloudflare v13 (built on
+  // @cloudflare/vite-plugin). Build with `bun run build`, deploy with
+  // `bunx wrangler deploy`.
+  //
+  // NOTE: `main` and `assets` are intentionally OMITTED. v13's adapter
+  // (wrangler.js) defaults `main` to "@astrojs/cloudflare/entrypoints/server"
+  // (a real source entry that passes the vite-plugin's build-time existence
+  // check) and supplies the ASSETS binding. Setting `main: ./dist/_worker.js/...`
+  // (a build OUTPUT) here makes `astro build` throw "doesn't point to an
+  // existing file". Do not re-add them.
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "yayasanalhidayah",
+  "account_id": "7f5c79c19bc6cb7cbda4500d1e5b615e",
+  // Required: @supabase/* pull in Node builtins (stream, events, crypto).
+  "compatibility_flags": ["nodejs_compat_v2"],
+  "observability": {
+    "enabled": true
+  },
+  // No KV binding: auth uses Supabase cookies (not Astro Sessions), and the
+  // null session driver in astro.config.mjs suppresses the adapter's SESSION KV
+  // auto-provisioning (which otherwise fails deploy with code 10014).
+  //
+  // Public (build-inlined) values. Safe to commit — anon key is RLS-guarded.
+  // TODO: fill with the yayasanalhidayah Supabase project URL + anon key.
+  "vars": {
+    "PUBLIC_SUPABASE_URL": "https://veekfqvmoddnyzlqklvi.supabase.co",
+    "PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZlZWtmcXZtb2Rkbnl6bHFrbHZpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE3NDY0NjQsImV4cCI6MjA5NzMyMjQ2NH0.IDVGMlzu37-iVD388zVuq1pvXNzClXieTd1gO66T7ME",
+    // WordPress donation site — campaign source for Program Donasi (see
+    // src/lib/wp/*). Public, non-secret. No trailing slash.
+    "WP_BASE_URL": "https://donasi.yayasanalhidayah.com"
+  }
+  // Cron keep-alive (scheduled() heartbeat) is deferred: v13's default server
+  // entry has no scheduled() handler. To re-enable, wire an auxiliaryWorker with
+  // a custom entry. The /api/heartbeat endpoint still works if called externally.
+}
