@@ -31,8 +31,13 @@ const raised = p.raised_amount ?? null;
 const donatur = p.donatur_count ?? null;
 const target = p.target_amount ?? null;
 const pct = p.progress_pct ?? null;
-const hasStats = (raised != null && raised > 0) || (donatur != null && donatur > 0);
-const hasBar = hasStats && target != null && target > 0 && pct != null;
+// Show the stats block for any DB-backed (synced) row — those carry the stat
+// columns, even when still at zero. Static fallback rows (programs.ts) omit
+// these keys entirely and render without the block.
+const isSynced = p.raised_amount !== undefined || p.donatur_count !== undefined;
+const hasDonations = (raised != null && raised > 0) || (donatur != null && donatur > 0);
+const hasStats = isSynced;
+const hasBar = hasDonations && target != null && target > 0 && pct != null;
 ---
 
 <article class="program-card" data-reveal data-category={category}>
@@ -45,7 +50,7 @@ const hasBar = hasStats && target != null && target > 0 && pct != null;
     <p>{p.description}</p>
 
     {hasStats && (
-      <div class="program-progress">
+      <div class={`program-progress${hasDonations ? '' : ' is-empty'}`}>
         {hasBar && (
           <div class="program-progress-bar" role="progressbar"
                aria-valuenow={Math.round(pct!)} aria-valuemin="0" aria-valuemax="100">
@@ -56,6 +61,9 @@ const hasBar = hasStats && target != null && target > 0 && pct != null;
           <span class="raised"><strong>{formatRupiahCompact(raised)}</strong> terkumpul</span>
           <span class="donatur">{donatur ?? 0} donatur</span>
         </div>
+        {!hasDonations && (
+          <p class="program-progress-cta">Jadilah donatur pertama untuk program ini.</p>
+        )}
       </div>
     )}
 

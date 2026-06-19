@@ -108,7 +108,8 @@ export default function ResourceList({ resourceSlug, initial }: Props) {
         </div>
       )}
 
-      <div className="rounded-md border">
+      {/* Desktop: table. Hidden on small screens where columns overflow. */}
+      <div className="hidden rounded-md border md:block">
         <Table>
           <TableHeader>
             <TableRow>
@@ -139,6 +140,46 @@ export default function ResourceList({ resourceSlug, initial }: Props) {
             ))}
           </TableBody>
         </Table>
+      </div>
+
+      {/* Mobile: stacked cards. The first list field is the title; the rest
+          render as labelled key/value rows so nothing overflows. */}
+      <div className="space-y-3 md:hidden">
+        {filtered.length === 0 && (
+          <p className="rounded-md border py-10 text-center text-sm text-muted-foreground">
+            {rows.length === 0 ? `Belum ada ${def.label.toLowerCase()}.` : 'Tidak ada hasil.'}
+          </p>
+        )}
+        {filtered.map((r) => {
+          const [titleField, ...restFields] = listFields;
+          return (
+            <div key={String(r.id)} className="rounded-md border p-4">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0 flex-1 font-medium break-words">
+                  {titleField ? cellValue(r, titleField.name, titleField.type) : String(r.id)}
+                </div>
+                <div className="flex shrink-0 gap-1">
+                  <Button variant="ghost" size="icon-sm" render={<a href={`/admin/content/${resourceSlug}/${r.id}`} />} aria-label="Edit">
+                    <Icon name="pencil" />
+                  </Button>
+                  <Button variant="ghost" size="icon-sm" onClick={() => setDeleteId(String(r.id))} aria-label="Hapus">
+                    <Icon name="trash-2" className="text-destructive" />
+                  </Button>
+                </div>
+              </div>
+              {restFields.length > 0 && (
+                <dl className="mt-3 space-y-1.5 text-sm">
+                  {restFields.map((f) => (
+                    <div key={f.name} className="flex items-start justify-between gap-3">
+                      <dt className="shrink-0 text-muted-foreground">{f.label}</dt>
+                      <dd className="min-w-0 break-words text-right">{cellValue(r, f.name, f.type)}</dd>
+                    </div>
+                  ))}
+                </dl>
+              )}
+            </div>
+          );
+        })}
       </div>
 
       <AlertDialog open={Boolean(deleteId)} onOpenChange={(o) => !o && setDeleteId(null)}>
