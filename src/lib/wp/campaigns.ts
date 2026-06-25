@@ -161,6 +161,11 @@ async function scrapeOne(base: string, slug: string): Promise<WpCampaign | null>
   try {
     const res = await fetchJson(url);
     if (!res.ok) return null;
+    // Unpublished/archived campaigns 302 to the WP homepage. fetch follows the
+    // redirect, so guard on the FINAL url: if we didn't land on this campaign's
+    // page, treat it as "not live" and skip (prevents homepage data leaking in
+    // as a fake campaign).
+    if (res.url && !res.url.includes(`/campaign/${slug}`)) return null;
     html = await res.text();
   } catch {
     return null;
@@ -213,21 +218,75 @@ export interface FetchResult {
   campaigns: WpCampaign[];
 }
 
+/** A slug donasiaja knows about, surfaced by the list endpoint (below). */
+interface DiscoveredSlug { slug: string; title: string }
+
 /**
- * Fetch campaigns from WP. Prefers REST (mu-plugin); if unavailable, scrapes the
- * given known slugs (the sync caller passes the slugs already in `programs`).
+ * DISCOVERY — list every campaign slug donasiaja has, via the mu-plugin route
+ * `/wp-json/yah/v1/campaigns` (yah-campaign-list.php). donasiaja exposes no
+ * standard REST/sitemap/search for campaigns, so this custom route is the only
+ * way the sync can find a campaign that isn't already in the programs table.
+ * Returns [] (not an error) when the mu-plugin isn't installed — the sync then
+ * just refreshes the slugs it already knows.
+ */
+const LIST_PATH = '/wp-json/yah/v1/campaigns';
+
+async function discoverSlugs(base: string): Promise<DiscoveredSlug[]> {
+  let res: Response;
+  try {
+    res = await fetchJson(`${base}${LIST_PATH}`);
+  } catch {
+    return [];
+  }
+  if (!res.ok) return []; // 404 → mu-plugin not installed
+  let body: unknown;
+  try { body = await res.json(); } catch { return []; }
+  const list = (body as { campaigns?: unknown })?.campaigns;
+  if (!Array.isArray(list)) return [];
+  const out: DiscoveredSlug[] = [];
+  for (const c of list as Record<string, unknown>[]) {
+    const slug = typeof c.slug === 'string' ? c.slug : '';
+    if (slug) out.push({ slug, title: typeof c.title === 'string' ? c.title : '' });
+  }
+  return out;
+}
+
+/** Scrape a set of slugs for accurate stats (bounded concurrency). */
+async function scrapeSlugs(base: string, slugs: string[]): Promise<WpCampaign[]> {
+  const out: WpCampaign[] = [];
+  const CONCURRENCY = 4;
+  for (let i = 0; i < slugs.length; i += CONCURRENCY) {
+    const batch = slugs.slice(i, i + CONCURRENCY);
+    const results = await Promise.all(batch.map((s) => scrapeOne(base, s)));
+    for (const r of results) if (r) out.push(r);
+  }
+  return out;
+}
+
+/**
+ * Fetch campaigns from WP.
+ *   1. Try the wp/v2 REST CPT (legacy yah-campaign-rest plugin). Rarely works
+ *      because donasiaja has no REST-exposed CPT — kept as insurance.
+ *   2. DISCOVER all slugs via the yah/v1/campaigns list route, UNION them with
+ *      the slugs already in the programs table (`knownSlugs`), then SCRAPE each
+ *      for accurate stats. The union means newly-created WP campaigns are found
+ *      (they scrape to a campaign whose slug isn't owned yet → the sync reports
+ *      them under newWpCampaigns for manual curation).
  */
 export async function fetchWpCampaigns(base: string, knownSlugs: string[]): Promise<FetchResult> {
   const rest = await fetchViaRest(base);
   if (rest && rest.length > 0) return { source: 'rest', campaigns: rest };
 
-  // Fallback: scrape known slugs (bounded concurrency).
-  const out: WpCampaign[] = [];
-  const CONCURRENCY = 4;
-  for (let i = 0; i < knownSlugs.length; i += CONCURRENCY) {
-    const batch = knownSlugs.slice(i, i + CONCURRENCY);
-    const results = await Promise.all(batch.map((s) => scrapeOne(base, s)));
-    for (const r of results) if (r) out.push(r);
+  const discovered = await discoverSlugs(base);
+  const slugs = Array.from(new Set([...discovered.map((d) => d.slug), ...knownSlugs]));
+  const campaigns = await scrapeSlugs(base, slugs);
+
+  // Backfill titles for any slug the scrape couldn't title but discovery did,
+  // so newWpCampaigns shows a readable name in the admin.
+  const titleBySlug = new Map(discovered.map((d) => [d.slug, d.title]));
+  for (const c of campaigns) {
+    if (!c.title && titleBySlug.get(c.slug)) c.title = titleBySlug.get(c.slug)!;
   }
-  return { source: 'scrape', campaigns: out };
+
+  return { source: 'scrape', campaigns };
 }
