@@ -11,5 +11,7 @@ const settings = await getSettings(Astro.locals.supabase);
     contact: settings.contact as any ?? {},
     social: settings.social as any ?? {},
     about: settings.about as any ?? {},
+    donorcta: settings.donorcta as any ?? {},
+    footer: settings.footer as any ?? {},
   }} />
 </AdminLayout>

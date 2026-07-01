@@ -26,9 +26,12 @@ const users = (authUsers?.users ?? []).map((u) => {
     full_name: profile?.full_name ?? u.user_metadata?.full_name ?? '',
     role: profile?.role ?? 'editor',
     created_at: u.created_at,
+    confirmed: Boolean(u.email_confirmed_at),
   };
 });
+
+const currentRole = Astro.locals.role ?? 'editor';
 ---
 <AdminLayout title="Pengguna">
-  <UsersManager client:load initial={users} currentUserId={Astro.locals.user?.id ?? ''} />
+  <UsersManager client:load initial={users} currentUserId={Astro.locals.user?.id ?? ''} currentRole={currentRole} />
 </AdminLayout>

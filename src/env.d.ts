@@ -1,5 +1,6 @@
 /// <reference types="astro/client" />
 /// <reference path="../.astro/types.d.ts" />
+/// <reference types="@cloudflare/workers-types" />
 
 import type { SupabaseClient, User } from '@supabase/supabase-js';
 import type { Database, Role } from '@/lib/supabase/types';

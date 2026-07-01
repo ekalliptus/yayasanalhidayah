@@ -32,16 +32,19 @@ export const POST: APIRoute = async ({ request, locals }) => {
   const runtimeEnv = workerEnv();
   const admin = createSupabaseAdmin(runtimeEnv);
 
-  // No auto-confirm: user must verify via recovery link.
+  // Auto-confirm: admin-provisioned accounts are trusted (the admin sets the
+  // password and shares it directly). Without this the user would be stuck —
+  // they can't log in until email is confirmed, and no SMTP is configured to
+  // deliver a confirmation link. `email_confirm: true` activates immediately.
   const { data: authData, error: authError } = await admin.auth.admin.createUser({
     email: payload.email,
     password: payload.password,
-    email_confirm: false,
+    email_confirm: true,
     user_metadata: { full_name: payload.full_name },
   });
   if (authError) {
     if (authError.message.toLowerCase().includes('already')) {
-      return badRequest('Tidak dapat membuat user');
+      return badRequest('Email sudah terdaftar');
     }
     return serverError(authError.message);
   }
@@ -51,15 +54,6 @@ export const POST: APIRoute = async ({ request, locals }) => {
     role: payload.role,
     full_name: payload.full_name,
   } as never).eq('id', userId);
-
-  // Send recovery email so user sets their own password (proves email ownership).
-  await admin.auth.admin.generateLink({
-    type: 'recovery',
-    email: payload.email,
-    options: {
-      redirectTo: `${runtimeEnv?.PUBLIC_SUPABASE_URL || 'https://yayasanalhidayah.com'}/admin/login`,
-    },
-  });
 
   await recordActivity(locals.supabase, {
     action: 'create',

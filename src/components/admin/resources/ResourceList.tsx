@@ -36,7 +36,11 @@ export default function ResourceList({ resourceSlug, initial }: Props) {
     setSyncing(true);
     try {
       const res = await fetch('/api/programs/sync', { method: 'POST' });
-      const body = await res.json().catch(() => null);
+      const body = (await res.json().catch(() => null)) as {
+        ok?: boolean;
+        error?: string;
+        summary?: { source?: string; matched?: number; updated?: number; created?: number; removed?: number };
+      } | null;
       if (!res.ok || !body?.ok) {
         toast.error(body?.error || 'Sync gagal');
         return;

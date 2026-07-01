@@ -10,9 +10,14 @@ const allowedTags = [
   'strong', 'em', 'u', 's', 'br', 'hr', 'span', 'mark', 'sub', 'sup',
   'img', 'figure', 'figcaption',
   'table', 'thead', 'tbody', 'tr', 'th', 'td',
+  // Column-width structure emitted by TipTap resizable tables.
+  'colgroup', 'col',
   // Task list (checklist) structure emitted by TipTap TaskList/TaskItem.
   'div', 'label', 'input',
 ];
+
+// Table column widths use `style="width:NNpx"` / min-width. Allow only that.
+const TABLE_WIDTH = [/^\d{1,4}px$/, /^\d{1,3}(\.\d+)?%$/];
 
 // Whitelist of font-family values the editor can apply (matches FONT_FAMILIES
 // in EditorToolbar). Anything else is dropped to avoid CSS injection.
@@ -42,12 +47,17 @@ export function sanitizeArticleHtml(dirty: string): string {
       mark: ['style', 'data-color'],
       code: ['class'],
       pre: ['class'],
-      td: ['colspan', 'rowspan'],
-      th: ['colspan', 'rowspan'],
+      td: ['colspan', 'rowspan', 'colwidth', 'style'],
+      th: ['colspan', 'rowspan', 'colwidth', 'style'],
+      col: ['span', 'style'],
+      colgroup: ['span'],
+      // TextAlign writes `style="text-align:…"` on block nodes.
+      p: ['style'],
+      h1: ['style'], h2: ['style'], h3: ['style'], h4: ['style'], h5: ['style'], h6: ['style'],
       // Checklist: keep the checkbox state but it is forced read-only below.
       input: ['type', 'checked', 'disabled'],
       ul: ['data-type'],
-      li: ['data-type', 'data-checked'],
+      li: ['data-type', 'data-checked', 'style'],
       '*': ['data-*'],
     },
     // No `data:` in anchor href — prevents data:text/html phishing links.
@@ -92,6 +102,10 @@ export function sanitizeArticleHtml(dirty: string): string {
         'font-family': FONT_FAMILY,
         'font-size': FONT_SIZE,
       },
+      // Table column widths (resizable tables).
+      col: { width: TABLE_WIDTH, 'min-width': TABLE_WIDTH },
+      td: { width: TABLE_WIDTH, 'min-width': TABLE_WIDTH },
+      th: { width: TABLE_WIDTH, 'min-width': TABLE_WIDTH },
     },
   });
 }
