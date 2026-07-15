@@ -1,13 +1,13 @@
 name: Supabase keep-alive
 
-# The Cloudflare adapter is v13 (no worker.ts / scheduled() cron handler), so
-# the daily keep-alive lives here instead. It hits the GET /api/heartbeat
-# endpoint, which runs the heartbeat() RPC -> one activity_log row, resetting
-# Supabase's ~7-day free-tier inactivity pause. GET (not POST) so Astro's
-# security.checkOrigin doesn't reject it.
+# FALLBACK keep-alive. The PRIMARY keep-alive is the standalone Cloudflare Worker
+# in cron-keepalive/ (deployed separately). This Action does the same job — GET
+# /api/heartbeat with CRON_SECRET (GET so Astro's security.checkOrigin doesn't
+# 403 it) to reset Supabase's ~7-day pause — and is kept as a backup in case the
+# CF cron ever stops. It only runs when GitHub Actions billing is active.
 #
 # Required repo secret: CRON_SECRET  (must equal the Worker's CRON_SECRET)
-# Set at: Settings -> Secrets and variables -> Actions -> New repository secret
+# Set via: gh secret set CRON_SECRET --repo <owner>/yayasanalhidayah
 
 on:
   schedule:

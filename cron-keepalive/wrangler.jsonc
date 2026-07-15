@@ -1,0 +1,15 @@
+{
+  // Standalone keep-alive Worker — deployed SEPARATELY from the main site:
+  //   bunx wrangler deploy --config cron-keepalive/wrangler.jsonc
+  // It only needs the CRON_SECRET secret (same value as the main Worker):
+  //   bunx wrangler secret put CRON_SECRET --config cron-keepalive/wrangler.jsonc
+  "$schema": "../node_modules/wrangler/config-schema.json",
+  "name": "yayasanalhidayah-keepalive",
+  "account_id": "7f5c79c19bc6cb7cbda4500d1e5b615e",
+  "main": "worker.js",
+  "compatibility_date": "2025-01-01",
+  "observability": { "enabled": true },
+  "triggers": {
+    "crons": ["7 3 * * *"]
+  }
+}
