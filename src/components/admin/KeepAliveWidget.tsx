@@ -10,6 +10,9 @@ import { relativeTime, absoluteTime, daysSince } from './format';
 // resets that clock; the daily heartbeat (plus organic dashboard writes) keeps
 // it warm. This widget surfaces how close the project is to pausing.
 const PAUSE_DAYS = 7;
+// Auto-ping on load when the last heartbeat is older than this, so simply
+// opening the dashboard keeps the DB warm without clicking the button.
+const AUTO_PING_STALE_MS = 12 * 60 * 60 * 1000;
 
 type Status = { label: string; tone: 'alive' | 'idle' | 'danger'; daysLeft: number };
 
@@ -33,23 +36,31 @@ export default function KeepAliveWidget({ lastHeartbeat: initial }: { lastHeartb
   const [pinging, setPinging] = React.useState(false);
   const status = deriveStatus(lastHeartbeat);
 
-  async function pingNow() {
+  const pingNow = React.useCallback(async (silent = false) => {
     setPinging(true);
     try {
       const res = await fetch('/api/heartbeat', { method: 'POST', headers: { 'x-source': 'dashboard' } });
       const body = (await res.json()) as { ok: boolean; at?: string; error?: string };
       if (body.ok && body.at) {
         setLastHeartbeat(body.at);
-        toast.success('Database di-ping — timer pause direset');
-      } else {
+        if (!silent) toast.success('Database di-ping — timer pause direset');
+      } else if (!silent) {
         toast.error(body.error || 'Gagal ping');
       }
     } catch {
-      toast.error('Gagal ping');
+      if (!silent) toast.error('Gagal ping');
     } finally {
       setPinging(false);
     }
-  }
+  }, []);
+
+  // Auto-ping on mount when the heartbeat is missing or stale, so just opening
+  // the dashboard keeps the DB warm — no button click required. Runs once.
+  React.useEffect(() => {
+    const sinceMs = initial ? Date.now() - new Date(initial).getTime() : Infinity;
+    if (sinceMs >= AUTO_PING_STALE_MS) void pingNow(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <Card>
@@ -72,7 +83,7 @@ export default function KeepAliveWidget({ lastHeartbeat: initial }: { lastHeartb
               <span className="block">{absoluteTime(lastHeartbeat)}</span>
             </p>
           </div>
-          <Button variant="outline" size="sm" onClick={pingNow} disabled={pinging}>
+          <Button variant="outline" size="sm" onClick={() => pingNow(false)} disabled={pinging}>
             <Icon name={pinging ? 'loader-circle' : 'heart-pulse'} className={pinging ? 'animate-spin' : ''} />
             Ping sekarang
           </Button>
