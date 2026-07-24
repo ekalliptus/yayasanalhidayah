@@ -16,7 +16,7 @@ const schema = z.object({
 // Edit a user's profile (full name) and/or manually activate their account.
 // Owner/admin only. Owner can edit anyone; admin cannot edit the owner.
 export const POST: APIRoute = async ({ request, locals }) => {
-  if (!locals.user || (locals.role !== 'owner' && locals.role !== 'admin')) return forbidden();
+  if (!locals.user || (locals.role !== 'super_admin' && locals.role !== 'owner' && locals.role !== 'admin')) return forbidden();
 
   let payload: z.infer<typeof schema>;
   try { payload = schema.parse(await request.json()); }
@@ -30,7 +30,10 @@ export const POST: APIRoute = async ({ request, locals }) => {
     .eq('id', payload.user_id)
     .single<{ role: string }>();
   if (!target) return badRequest('User tidak ditemukan');
-  if (target.role === 'owner' && locals.user.id !== payload.user_id) {
+  if (target.role === 'super_admin' && locals.user.id !== payload.user_id) {
+    return forbidden('Tidak bisa mengubah super admin');
+  }
+  if (target.role === 'owner' && locals.user.id !== payload.user_id && locals.role !== 'super_admin') {
     return forbidden('Tidak bisa mengubah owner');
   }
 

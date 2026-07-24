@@ -8,7 +8,7 @@ import { workerEnv } from '@/lib/supabase/runtime-env';
 // Triggers a Cloudflare deploy hook to rebuild the static marketing pages after
 // a CMS edit. Owner/admin only. Records the action in the activity log.
 export const POST: APIRoute = async ({ locals }) => {
-  if (!locals.user || (locals.role !== 'owner' && locals.role !== 'admin')) {
+  if (!locals.user || (locals.role !== 'super_admin' && locals.role !== 'owner' && locals.role !== 'admin')) {
     return forbidden();
   }
   const env = resolveEnv(workerEnv());

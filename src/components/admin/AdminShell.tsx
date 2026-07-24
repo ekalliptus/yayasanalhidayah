@@ -56,7 +56,7 @@ export default function AdminShell({ currentPath, user, role, children }: Props)
     () =>
       NAV_SECTIONS.map((s) => ({
         ...s,
-        items: s.items.filter((i) => !i.adminOnly || role === 'owner' || role === 'admin'),
+        items: s.items.filter((i) => !i.adminOnly || role === 'super_admin' || role === 'owner' || role === 'admin'),
       })).filter((s) => s.items.length > 0),
     [role],
   );
@@ -193,7 +193,7 @@ export default function AdminShell({ currentPath, user, role, children }: Props)
 
 function RebuildButton({ role }: { role: Role }) {
   const [loading, setLoading] = React.useState(false);
-  if (role !== 'owner' && role !== 'admin') return null;
+  if (role !== 'super_admin' && role !== 'owner' && role !== 'admin') return null;
 
   async function rebuild() {
     setLoading(true);

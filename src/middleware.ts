@@ -66,7 +66,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
     return redirect(`/admin/login?next=${encodeURIComponent(next)}`);
   }
   if (needsAuth && ADMIN_ONLY_PREFIXES.some((p) => path.startsWith(p))) {
-    if (locals.role !== 'owner' && locals.role !== 'admin') {
+    if (locals.role !== 'super_admin' && locals.role !== 'owner' && locals.role !== 'admin') {
       return redirect('/admin?error=forbidden');
     }
   }

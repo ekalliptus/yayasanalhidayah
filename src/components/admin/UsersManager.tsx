@@ -32,13 +32,14 @@ export interface UserRow {
 }
 
 const roleBadge: Record<Role, string> = {
+  super_admin: 'bg-purple-500/15 text-purple-400 border-purple-500/30',
   owner: 'bg-amber-500/15 text-amber-400 border-amber-500/30',
   admin: 'bg-blue-500/15 text-blue-400 border-blue-500/30',
   editor: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30',
 };
 
 const roleLabel: Record<Role, string> = {
-  owner: 'Owner', admin: 'Admin', editor: 'Editor',
+  super_admin: 'Super Admin', owner: 'Owner', admin: 'Admin', editor: 'Editor',
 };
 
 interface Props {
@@ -71,6 +72,7 @@ export default function UsersManager({ initial, currentUserId, currentRole }: Pr
   const [deleting, setDeleting] = React.useState(false);
 
   const isOwner = currentRole === 'owner';
+  const isSuperAdmin = currentRole === 'super_admin';
 
   async function addUser() {
     if (!email || !password || password.length < 8) {
@@ -178,8 +180,9 @@ export default function UsersManager({ initial, currentUserId, currentRole }: Pr
 
   // Can the current user act on this target row?
   function canManage(u: UserRow): boolean {
-    if (u.role === 'owner') return false;          // owner untouchable
-    if (u.role === 'admin' && !isOwner) return false; // only owner manages admins
+    if (u.role === 'super_admin') return false;    // super admin untouchable by anyone
+    if (u.role === 'owner') return isSuperAdmin;   // only super admin manages owner
+    if (u.role === 'admin' && !isOwner && !isSuperAdmin) return false; // only owner/super manage admins
     return true;
   }
 
@@ -222,7 +225,7 @@ export default function UsersManager({ initial, currentUserId, currentRole }: Pr
                       <Select value={u.role} onValueChange={(v: string | null) => { if (v) changeRole(u.id, v as Role); }}>
                         <SelectTrigger className="h-7 w-24 text-xs"><SelectValue /></SelectTrigger>
                         <SelectContent>
-                          {isOwner && <SelectItem value="admin">Admin</SelectItem>}
+                          {(isOwner || isSuperAdmin) && <SelectItem value="admin">Admin</SelectItem>}
                           <SelectItem value="editor">Editor</SelectItem>
                         </SelectContent>
                       </Select>
@@ -292,7 +295,7 @@ export default function UsersManager({ initial, currentUserId, currentRole }: Pr
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="editor">Editor (penulis blog/artikel)</SelectItem>
-                  {isOwner && <SelectItem value="admin">Admin (kelola semua)</SelectItem>}
+                  {(isOwner || isSuperAdmin) && <SelectItem value="admin">Admin (kelola semua)</SelectItem>}
                 </SelectContent>
               </Select>
             </div>

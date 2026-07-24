@@ -13,7 +13,7 @@ const schema = z.object({ user_id: z.string().uuid() });
 //   - Admin can delete editors only (not admins, not owner).
 //   - No one can delete the owner or their own account here.
 export const POST: APIRoute = async ({ request, locals }) => {
-  if (!locals.user || (locals.role !== 'owner' && locals.role !== 'admin')) return forbidden();
+  if (!locals.user || (locals.role !== 'super_admin' && locals.role !== 'owner' && locals.role !== 'admin')) return forbidden();
 
   let payload: z.infer<typeof schema>;
   try { payload = schema.parse(await request.json()); }
@@ -31,8 +31,9 @@ export const POST: APIRoute = async ({ request, locals }) => {
     .eq('id', payload.user_id)
     .single<{ role: string }>();
   if (!target) return badRequest('User tidak ditemukan');
-  if (target.role === 'owner') return forbidden('Tidak bisa menghapus owner');
-  if (target.role === 'admin' && locals.role !== 'owner') {
+  if (target.role === 'super_admin') return forbidden('Tidak bisa menghapus super admin');
+  if (target.role === 'owner' && locals.role !== 'super_admin') return forbidden('Tidak bisa menghapus owner');
+  if (target.role === 'admin' && locals.role !== 'owner' && locals.role !== 'super_admin') {
     return forbidden('Hanya owner yang bisa menghapus admin');
   }
 

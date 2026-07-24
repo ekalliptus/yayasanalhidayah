@@ -15,7 +15,7 @@ const schema = z.object({
 });
 
 export const POST: APIRoute = async ({ request, locals }) => {
-  if (!locals.user || (locals.role !== 'owner' && locals.role !== 'admin')) return forbidden();
+  if (!locals.user || (locals.role !== 'super_admin' && locals.role !== 'owner' && locals.role !== 'admin')) return forbidden();
 
   let payload: z.infer<typeof schema>;
   try { payload = schema.parse(await request.json()); }
@@ -24,8 +24,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
   const pwErr = passwordStrengthError(payload.password);
   if (pwErr) return badRequest(pwErr);
 
-  // Privilege-multiplication guard: only owner can create admin.
-  if (payload.role === 'admin' && locals.role !== 'owner') {
+  // Privilege-multiplication guard: only owner/super_admin can create admin.
+  if (payload.role === 'admin' && locals.role !== 'owner' && locals.role !== 'super_admin') {
     return forbidden('Hanya owner yang bisa membuat user admin');
   }
 

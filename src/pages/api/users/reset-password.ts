@@ -18,7 +18,7 @@ const schema = z.object({
 //   - Editor cannot use this endpoint
 // Mirrors the privilege model used by update-role / create.
 export const POST: APIRoute = async ({ request, locals }) => {
-  if (!locals.user || (locals.role !== 'owner' && locals.role !== 'admin')) return forbidden();
+  if (!locals.user || (locals.role !== 'super_admin' && locals.role !== 'owner' && locals.role !== 'admin')) return forbidden();
 
   let payload: z.infer<typeof schema>;
   try { payload = schema.parse(await request.json()); }
@@ -38,7 +38,10 @@ export const POST: APIRoute = async ({ request, locals }) => {
     .single<{ role: string; email: string }>();
   if (!target) return badRequest('User tidak ditemukan');
 
-  if (target.role === 'owner') {
+  if (target.role === 'super_admin') {
+    return forbidden('Tidak bisa mereset kata sandi super admin');
+  }
+  if (target.role === 'owner' && locals.role !== 'super_admin') {
     return forbidden('Tidak bisa mereset kata sandi owner — minta owner yang melakukannya');
   }
 

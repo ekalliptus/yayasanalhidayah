@@ -1114,7 +1114,7 @@ export type ContactSubmission = Tables<'contact_submissions'>;
 export type Profile = Tables<'profiles'>;
 
 export type ArticleStatus = 'draft' | 'published' | 'scheduled' | 'archived';
-export type Role = 'owner' | 'admin' | 'editor';
+export type Role = 'super_admin' | 'owner' | 'admin' | 'editor';
 export type ActivityAction =
   | 'create' | 'update' | 'delete' | 'login' | 'logout'
   | 'publish' | 'unpublish' | 'site_rebuild' | 'heartbeat';
