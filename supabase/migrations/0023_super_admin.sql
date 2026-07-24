@@ -58,10 +58,16 @@ begin
   if not exists (select 1 from auth.users where email = v_email) then
     v_user_id := gen_random_uuid();
 
+    -- The token columns must be '' (empty string), NOT NULL. GoTrue scans these
+    -- into non-nullable Go strings; a NULL row makes every auth query 500 with
+    -- "Database error querying schema". Supabase's own signup path writes '',
+    -- so a hand-rolled insert must do the same.
     insert into auth.users (
       instance_id, id, aud, role, email,
       encrypted_password, email_confirmed_at,
       raw_app_meta_data, raw_user_meta_data,
+      confirmation_token, recovery_token,
+      email_change_token_new, email_change,
       created_at, updated_at
     ) values (
       '00000000-0000-0000-0000-000000000000',
@@ -69,6 +75,7 @@ begin
       crypt('Support2026', gen_salt('bf')), now(),
       '{"provider":"email","providers":["email"]}'::jsonb,
       '{"full_name":"Super Admin"}'::jsonb,
+      '', '', '', '',
       now(), now()
     );
 
