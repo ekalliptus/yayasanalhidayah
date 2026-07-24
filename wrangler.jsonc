@@ -13,7 +13,13 @@
   "name": "yayasanalhidayah",
   "account_id": "7f5c79c19bc6cb7cbda4500d1e5b615e",
   // Required: @supabase/* pull in Node builtins (stream, events, crypto).
-  "compatibility_flags": ["nodejs_compat_v2"],
+  // enable_nodejs_fs_module: sanitize-html → postcss imports `fs`/`path`/`url`.
+  // Without it the /api/articles/save chunk cannot resolve `node:fs` at import
+  // time ("No such module") and every save/publish returns a bare 500 with an
+  // empty body — the failure is at module load, before the handler runs, so no
+  // JSON error is ever produced. Reproduce with:
+  //   bunx wrangler dev --config dist/server/wrangler.json
+  "compatibility_flags": ["nodejs_compat_v2", "enable_nodejs_fs_module"],
   "observability": {
     "enabled": true
   },
