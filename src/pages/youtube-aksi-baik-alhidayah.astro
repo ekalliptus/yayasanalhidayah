@@ -1,0 +1,502 @@
+---
+export const prerender = false;
+// Landing page: Kafarat (from the Google Doc "LP Baru Wordpress").
+// Permalink requested by client: /youtube-aksi-baik-alhidayah
+// Self-contained: reuses Base/Header/Footer + global tokens; all page-specific
+// styling is scoped below. The kafarat calculator is vanilla JS (no deps).
+import Base from '../layouts/Base.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import WhatsAppFab from '../components/WhatsAppFab.astro';
+
+// Crowdfunding endpoints (from the doc). Both CTAs route to the campaign form.
+const PAYMENT_URL = 'https://donasi.yayasanalhidayah.com/campaign/tunaikan-kafarat-hari-ini/donasi';
+const REKENING_URL = 'https://donasi.yayasanalhidayah.com/campaign/tunaikan-kafarat-hari-ini/invoice/INV-260803VP99Z';
+
+// Calculator types: per-violation nominal (1 mud = Rp15.000).
+const kafaratTypes = [
+  { id: 'sumpah', label: 'Kafarat Sumpah Palsu', per: 150_000, note: '10 fakir miskin × 1 mud (Rp15.000)' },
+  { id: 'jima', label: "Kafarat Jima'", per: 900_000, note: '60 fakir miskin × 1 mud (Rp15.000)' },
+  { id: 'ila', label: 'Kafarat Ila', per: 150_000, note: '10 fakir miskin × 1 mud (Rp15.000)' },
+  { id: 'dzihar', label: 'Kafarat Dzihar', per: 900_000, note: '60 fakir miskin × 1 mud (Rp15.000)' },
+  { id: 'lainnya', label: 'Lainnya (nominal manual)', per: 0, note: 'Masukkan nominal sendiri' },
+];
+
+const perlu = [
+  'Melanggar sumpah atas nama Allah',
+  "Melakukan jima' di siang hari Ramadan",
+  'Melakukan zihar',
+  'Memiliki kewajiban ila sesuai ketentuan syariat',
+];
+
+const alasan = [
+  { t: 'Sesuai Ketentuan Syariat', d: 'Penyaluran kafarat dilakukan berdasarkan ketentuan penerima yang berhak.' },
+  { t: 'Tepat Sasaran', d: 'Kafarat disalurkan kepada saudara-saudara yang membutuhkan.' },
+  { t: 'Transparansi Penyaluran', d: 'Setiap program dilengkapi dokumentasi sebagai bentuk pertanggungjawaban amanah.' },
+  { t: 'Mudah Ditunaikan', d: 'Proses pembayaran dan konfirmasi dilakukan dengan mudah.' },
+];
+
+const legalitas = ['Akta Pendirian Yayasan', 'SK Kemenkumham', 'NPWP Yayasan', 'Rekening Atas Nama Yayasan'];
+
+const dampak = [
+  { n: 1065, s: '', l: 'Paket Makanan Tersalurkan' },
+  { n: 150, s: '+', l: 'Penerima Manfaat' },
+  { n: 0, s: '', l: 'Puluhan Donatur Menunaikan Kafarat', text: 'Puluhan' },
+  { n: 0, s: '', l: 'Distribusi Berbagai Wilayah Indonesia', text: 'Nasional' },
+];
+
+const testimoni = [
+  { q: 'Awalnya saya bingung cara menunaikan kafarat sumpah. Alhamdulillah dibantu tim Alhidayah sampai proses penyalurannya selesai.', a: 'Donatur, Bandung' },
+  { q: 'Dokumentasinya jelas dan prosesnya cepat. Saya jadi lebih tenang karena kewajiban kafarat sudah ditunaikan.', a: 'Donatur, Jakarta' },
+];
+
+const faq = [
+  { q: 'Apakah kafarat boleh diwakilkan melalui lembaga?', a: 'Ya, penyaluran dapat dilakukan melalui lembaga yang amanah selama disalurkan kepada penerima yang berhak sesuai ketentuan syariat.' },
+  { q: 'Siapa penerima kafarat?', a: 'Kafarat disalurkan kepada fakir dan miskin yang membutuhkan.' },
+  { q: 'Apakah saya akan mendapatkan dokumentasi?', a: 'Ya, Yayasan Alhidayah menyediakan dokumentasi penyaluran sebagai bentuk transparansi amanah.' },
+];
+
+// Documentation gallery: the doc references 6 photos (IMG_5883.JPG …) that were
+// not embedded. Placeholder tiles render until the client supplies real assets;
+// drop files into /public/kafarat/ and swap `img` in to replace a tile.
+const galeri = ['IMG_5883', 'IMG_5881', 'IMG_5887', 'IMG_5851', 'IMG_5843', 'IMG_5860'];
+
+const title = 'Kalkulator & Tunaikan Kafarat — Yayasan Alhidayah';
+const description = 'Masih memiliki kewajiban kafarat? Pelajari, hitung dengan kalkulator kafarat, dan tunaikan sesuai syariat melalui penyaluran yang amanah dan tepat sasaran bersama Yayasan Alhidayah.';
+---
+
+<Base title={title} description={description}>
+  <Header base="/" />
+
+  <main class="kf">
+    <!-- HERO -->
+    <section class="kf-hero">
+      <div class="container">
+        <div class="kf-hero-inner on-deep" data-reveal>
+          <div class="eyebrow" style="color: var(--ink-on-deep-2);">Yayasan Alhidayah · Program Kafarat</div>
+          <h1 class="display kf-h1">Masih Memiliki<br/>Kewajiban <em>Kafarat?</em></h1>
+          <p class="kf-hero-sub">Pelajari, hitung, dan tunaikan kafarat sesuai syariat melalui penyaluran yang amanah dan tepat sasaran.</p>
+          <div class="ctas kf-hero-ctas">
+            <a class="btn btn-primary" href="#kalkulator">
+              Hitung Kafarat Saya <span class="arrow"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+            </a>
+            <a class="btn btn-ghost" href={PAYMENT_URL} target="_blank" rel="noopener noreferrer">Tunaikan Sekarang</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- APA ITU KAFARAT -->
+    <section class="section-pad">
+      <div class="container kf-narrow">
+        <div class="eyebrow"><span class="section-num">01 / Definisi</span></div>
+        <h2 class="kf-h2">Apa Itu Kafarat?</h2>
+        <p class="lede" style="margin-top:16px;">Kafarat adalah kewajiban yang ditunaikan seorang muslim sebagai bentuk penyelesaian atas pelanggaran tertentu sesuai syariat Islam.</p>
+        <blockquote class="kf-quote" data-reveal>
+          <p>"Maka kafarat (melanggar) sumpah itu ialah memberi makan sepuluh orang miskin…"</p>
+          <cite>— QS. Al-Ma'idah: 89</cite>
+        </blockquote>
+      </div>
+    </section>
+
+    <!-- APAKAH ANDA PERLU -->
+    <section class="section-pad kf-alt">
+      <div class="container">
+        <div class="kf-split">
+          <div data-reveal>
+            <div class="eyebrow"><span class="section-num">02 / Tanda</span></div>
+            <h2 class="kf-h2">Apakah Anda Perlu Membayar Kafarat?</h2>
+            <p style="color:var(--ink-2);margin-top:14px;max-width:44ch;">Anda mungkin memiliki kewajiban kafarat apabila salah satu kondisi berikut terjadi.</p>
+          </div>
+          <ul class="kf-check" data-reveal>
+            {perlu.map((item) => (
+              <li>
+                <span class="kf-check-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 13 4 4L19 7"/></svg></span>
+                <span>{item}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+        <div class="kf-band" data-reveal>
+          <strong>Mengapa perlu segera ditunaikan?</strong>
+          Kafarat yang belum ditunaikan tetap menjadi tanggungan seorang muslim. Menyelesaikannya adalah bentuk ketaatan kepada Allah SWT sekaligus menghadirkan ketenangan hati.
+        </div>
+      </div>
+    </section>
+
+    <!-- CONTOH PERHITUNGAN -->
+    <section class="section-pad">
+      <div class="container kf-narrow">
+        <div class="eyebrow"><span class="section-num">03 / Simulasi</span></div>
+        <h2 class="kf-h2">Contoh Perhitungan Kafarat</h2>
+        <p style="color:var(--ink-2);margin-top:14px;">Masih bingung berapa nilai kafarat yang harus ditunaikan? Berikut simulasi sederhana untuk memudahkan perhitungan.</p>
+        <div class="kf-example" data-reveal>
+          <p>Seseorang memiliki kewajiban <strong>kafarat jima'</strong> dan memilih menunaikannya dengan memberi makan fakir miskin.</p>
+          <div class="kf-example-row"><span>Memberi makan fakir miskin</span><span>60 orang</span></div>
+          <div class="kf-example-row"><span>Satu paket makanan (1 mud)</span><span>Rp15.000</span></div>
+          <div class="kf-example-row kf-example-total"><span>60 × Rp15.000</span><span>Rp900.000</span></div>
+          <p class="kf-example-note">Estimasi kafarat yang perlu ditunaikan adalah <strong>Rp900.000</strong>.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- KALKULATOR -->
+    <section class="section-pad kf-alt" id="kalkulator">
+      <div class="container kf-narrow">
+        <div class="eyebrow"><span class="section-num">04 / Kalkulator</span></div>
+        <h2 class="kf-h2">Hitung Perkiraan Kafarat Anda Sekarang</h2>
+        <p style="color:var(--ink-2);margin-top:14px;">Gunakan kalkulator berikut untuk mengetahui perkiraan kebutuhan kafarat berdasarkan kondisi Anda.</p>
+
+        <form class="kf-calc" id="kf-calc" data-reveal onsubmit="return false">
+          <label class="kf-field">
+            <span>Jenis Kafarat</span>
+            <select id="kf-type">
+              {kafaratTypes.map((t) => (
+                <option value={t.id} data-per={t.per}>{t.label}</option>
+              ))}
+            </select>
+            <small id="kf-type-note">{kafaratTypes[0].note}</small>
+          </label>
+
+          <label class="kf-field" id="kf-manual-field" hidden>
+            <span>Nominal per Pelanggaran (Rp)</span>
+            <input id="kf-manual" type="number" inputmode="numeric" min="0" step="1000" placeholder="mis. 150000" />
+          </label>
+
+          <label class="kf-field">
+            <span>Berapa Kali Melanggar?</span>
+            <input id="kf-count" type="number" inputmode="numeric" min="1" step="1" value="1" />
+          </label>
+
+          <button class="btn btn-primary kf-calc-btn" id="kf-submit" type="button">
+            Hitung Kafarat <span class="arrow"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+          </button>
+        </form>
+
+        <div class="kf-result" id="kf-result" hidden>
+          <div class="kf-result-label">Estimasi Kafarat Anda</div>
+          <div class="kf-result-amount" id="kf-result-amount">Rp0</div>
+          <p class="kf-result-detail" id="kf-result-detail"></p>
+          <a class="btn btn-primary" id="kf-result-cta" href={PAYMENT_URL} target="_blank" rel="noopener noreferrer">
+            Tunaikan Kafarat Saya <span class="arrow"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA BAND -->
+    <section class="section-pad">
+      <div class="container">
+        <div class="kf-cta on-deep" data-reveal>
+          <h2>Sudah Mengetahui Perkiraan Kafarat Anda?</h2>
+          <p>Jangan biarkan kewajiban yang sudah Anda ketahui terus tertunda. Tunaikan sesuai syariat dan salurkan kepada penerima yang berhak melalui Yayasan Alhidayah.</p>
+          <div class="ctas" style="justify-content:center;">
+            <a class="btn btn-primary" href={PAYMENT_URL} target="_blank" rel="noopener noreferrer">
+              Tunaikan Kafarat Saya <span class="arrow"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+            </a>
+            <a class="btn btn-ghost" href={REKENING_URL} target="_blank" rel="noopener noreferrer">Transfer via Rekening</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- MENGAPA ALHIDAYAH -->
+    <section class="section-pad kf-alt">
+      <div class="container">
+        <div class="eyebrow"><span class="section-num">05 / Mengapa Kami</span></div>
+        <h2 class="kf-h2">Mengapa Menunaikan Kafarat Melalui Yayasan Alhidayah?</h2>
+        <div class="kf-cards">
+          {alasan.map((a) => (
+            <div class="kf-card" data-reveal>
+              <span class="kf-card-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 13 4 4L19 7"/></svg></span>
+              <h3>{a.t}</h3>
+              <p>{a.d}</p>
+            </div>
+          ))}
+        </div>
+
+        <div class="kf-legal" data-reveal>
+          <div>
+            <h3>Mengenal Yayasan Alhidayah</h3>
+            <p>Yayasan Alhidayah adalah lembaga sosial yang membantu kaum muslimin menunaikan berbagai kewajiban syariat secara amanah, transparan, dan sesuai ketentuan Islam. Sebagai bentuk komitmen terhadap transparansi dan akuntabilitas, Yayasan Alhidayah memiliki legalitas yang jelas.</p>
+          </div>
+          <ul class="kf-legal-list">
+            {legalitas.map((l) => (
+              <li><span class="kf-check-ic sm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 13 4 4L19 7"/></svg></span>{l}</li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- BUKTI NYATA + DAMPAK -->
+    <section class="section-pad">
+      <div class="container">
+        <div class="eyebrow"><span class="section-num">06 / Bukti Nyata</span></div>
+        <h2 class="kf-h2">Bukti Nyata Penyaluran Kafarat Alhidayah</h2>
+        <p style="color:var(--ink-2);margin-top:14px;max-width:60ch;">Setiap kafarat yang ditunaikan bukan hanya menyelesaikan kewajiban kepada Allah SWT. Di balik setiap amanah yang disalurkan, ada saudara muslim yang terbantu dan merasakan manfaatnya.</p>
+
+        <div class="kf-gallery" data-reveal>
+          {galeri.map((g) => (
+            <figure class="kf-shot" aria-label={`Dokumentasi penyaluran ${g}`}>
+              <span class="kf-shot-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8.5" cy="10.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg></span>
+              <figcaption>Dokumentasi Penyaluran</figcaption>
+            </figure>
+          ))}
+        </div>
+
+        <dl class="kf-stats" data-reveal>
+          {dampak.map((d) => (
+            <div class="kf-stat">
+              <dt>{d.text ? <span>{d.text}</span> : <span data-counter={d.n} data-suffix={d.s}></span>}</dt>
+              <dd>{d.l}</dd>
+            </div>
+          ))}
+        </dl>
+      </div>
+    </section>
+
+    <!-- TESTIMONI -->
+    <section class="section-pad kf-alt">
+      <div class="container">
+        <div class="eyebrow"><span class="section-num">07 / Testimoni</span></div>
+        <h2 class="kf-h2">Kata Mereka yang Telah Menunaikan Kafarat</h2>
+        <div class="kf-quotes">
+          {testimoni.map((t) => (
+            <blockquote class="kf-testi" data-reveal>
+              <p>“{t.q}”</p>
+              <cite>— {t.a}</cite>
+            </blockquote>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <!-- FINAL CTA -->
+    <section class="section-pad">
+      <div class="container kf-narrow" style="text-align:center;">
+        <h2 class="kf-h2">Jangan Biarkan Kewajiban Kafarat Terus Tertunda</h2>
+        <p class="lede" style="margin:16px auto 0;">Jika masih ada kewajiban kafarat yang belum ditunaikan, hari ini adalah kesempatan untuk menyelesaikannya melalui Yayasan Alhidayah — lebih mudah sekaligus menghadirkan manfaat bagi saudara yang membutuhkan.</p>
+        <div class="ctas" style="justify-content:center;margin-top:28px;">
+          <a class="btn btn-primary" href="#kalkulator">
+            Hitung &amp; Tunaikan Kafarat Saya <span class="arrow"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQ -->
+    <section class="section-pad kf-alt">
+      <div class="container kf-narrow">
+        <div class="eyebrow"><span class="section-num">08 / FAQ</span></div>
+        <h2 class="kf-h2">Pertanyaan yang Sering Diajukan</h2>
+        <div class="kf-faq" data-reveal>
+          {faq.map((f, i) => (
+            <details open={i === 0}>
+              <summary>{f.q}<span class="kf-faq-ic" aria-hidden="true"></span></summary>
+              <p>{f.a}</p>
+            </details>
+          ))}
+        </div>
+        <div class="ctas" style="justify-content:center;margin-top:32px;">
+          <a class="btn btn-primary" href={PAYMENT_URL} target="_blank" rel="noopener noreferrer">
+            Bayar Kafarat Sekarang <span class="arrow"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+          </a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <Footer base="/" />
+  <WhatsAppFab />
+
+  <script is:inline define:vars={{ PAYMENT_URL }}>
+    (function () {
+      var typeEl = document.getElementById('kf-type');
+      var noteEl = document.getElementById('kf-type-note');
+      var manualField = document.getElementById('kf-manual-field');
+      var manualEl = document.getElementById('kf-manual');
+      var countEl = document.getElementById('kf-count');
+      var submit = document.getElementById('kf-submit');
+      var result = document.getElementById('kf-result');
+      var amountEl = document.getElementById('kf-result-amount');
+      var detailEl = document.getElementById('kf-result-detail');
+      var cta = document.getElementById('kf-result-cta');
+      if (!typeEl || !submit) return;
+
+      var rp = function (n) { return 'Rp' + (n || 0).toLocaleString('id-ID'); };
+
+      function selected() { return typeEl.options[typeEl.selectedIndex]; }
+
+      var notes = {
+        sumpah: '10 fakir miskin × 1 mud (Rp15.000) = Rp150.000',
+        jima: '60 fakir miskin × 1 mud (Rp15.000) = Rp900.000',
+        ila: '10 fakir miskin × 1 mud (Rp15.000) = Rp150.000',
+        dzihar: '60 fakir miskin × 1 mud (Rp15.000) = Rp900.000',
+        lainnya: 'Masukkan nominal per pelanggaran di bawah.'
+      };
+      function refreshNote() {
+        var opt = selected();
+        manualField.hidden = opt.value !== 'lainnya';
+        noteEl.textContent = notes[opt.value] || '';
+      }
+
+      function calc() {
+        var opt = selected();
+        var per = opt.value === 'lainnya' ? Math.max(0, parseInt(manualEl.value || '0', 10)) : parseInt(opt.getAttribute('data-per') || '0', 10);
+        var count = Math.max(1, parseInt(countEl.value || '1', 10));
+        var total = per * count;
+        amountEl.textContent = rp(total);
+        detailEl.textContent = opt.textContent.replace(/\s*\(nominal manual\)/, '') + ' · ' + rp(per) + ' × ' + count + ' pelanggaran';
+        cta.href = PAYMENT_URL;
+        result.hidden = false;
+        result.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+
+      typeEl.addEventListener('change', refreshNote);
+      submit.addEventListener('click', calc);
+      refreshNote();
+    })();
+  </script>
+
+  <style>
+    .kf { --kf-radius: var(--r-lg); }
+    .kf-narrow { max-width: 760px; }
+    .kf-alt { background: var(--bg-alt); }
+    .kf h2.kf-h2 {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: clamp(28px, 4vw, 46px);
+      line-height: 1.05;
+      letter-spacing: -0.03em;
+      color: var(--ink);
+      margin: 12px 0 0;
+    }
+
+    /* HERO */
+    .kf-hero { padding: clamp(40px, 8vw, 80px) 0 clamp(24px, 5vw, 48px); }
+    .kf-hero-inner {
+      position: relative;
+      background: linear-gradient(135deg, var(--brand) 0%, #17457a 100%);
+      border-radius: var(--r-xl);
+      padding: clamp(36px, 6vw, 72px);
+      overflow: hidden;
+    }
+    .kf-hero-inner::after {
+      content: ''; position: absolute; inset: 0;
+      background: radial-gradient(120% 120% at 100% 0%, rgba(201,162,39,0.22), transparent 55%);
+      pointer-events: none;
+    }
+    .kf-h1 { color: var(--ink-on-deep); font-size: clamp(34px, 6vw, 64px); margin: 18px 0 0; }
+    .kf-h1 em { color: var(--highlight); font-style: normal; }
+    .kf-hero-sub { color: var(--ink-on-deep-2); font-size: clamp(16px, 1.5vw, 19px); line-height: 1.6; margin: 20px 0 0; max-width: 52ch; }
+    .kf-hero-ctas { margin-top: 32px; position: relative; z-index: 1; }
+
+    /* QUOTE */
+    .kf-quote {
+      margin: 32px 0 0; padding: 24px 28px;
+      border-left: 4px solid var(--accent);
+      background: var(--bg-alt); border-radius: 0 var(--r-md) var(--r-md) 0;
+    }
+    .kf-quote p { font-size: 18px; line-height: 1.6; color: var(--ink); font-style: italic; }
+    .kf-quote cite { display: block; margin-top: 12px; font-style: normal; font-size: 14px; color: var(--ink-2); }
+
+    /* CHECK LIST */
+    .kf-split { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(24px, 5vw, 64px); align-items: center; }
+    .kf-check { list-style: none; display: grid; gap: 14px; }
+    .kf-check li { display: flex; align-items: flex-start; gap: 14px; font-size: 16px; color: var(--ink); background: var(--paper); border: 1px solid var(--line); border-radius: var(--r-md); padding: 16px 18px; }
+    .kf-check-ic { flex: none; width: 28px; height: 28px; border-radius: 999px; background: var(--brand-2); color: #fff; display: grid; place-items: center; }
+    .kf-check-ic.sm { width: 22px; height: 22px; }
+    .kf-check-ic svg { width: 16px; height: 16px; }
+    .kf-check-ic.sm svg { width: 13px; height: 13px; }
+    .kf-band { margin-top: clamp(24px, 4vw, 40px); padding: 24px 28px; border-radius: var(--r-md); background: var(--paper); border: 1px solid var(--line); font-size: 16px; line-height: 1.65; color: var(--ink-2); }
+    .kf-band strong { display: block; color: var(--ink); margin-bottom: 6px; font-size: 17px; }
+
+    /* EXAMPLE */
+    .kf-example { margin-top: 28px; background: var(--paper); border: 1px solid var(--line); border-radius: var(--r-lg); padding: clamp(24px, 4vw, 36px); }
+    .kf-example > p { color: var(--ink-2); line-height: 1.6; }
+    .kf-example-row { display: flex; justify-content: space-between; gap: 16px; padding: 14px 0; border-bottom: 1px dashed var(--line-strong); font-size: 15px; color: var(--ink); }
+    .kf-example-row span:last-child { font-weight: 600; font-variant-numeric: tabular-nums; }
+    .kf-example-total { border-bottom: none; font-size: 18px; }
+    .kf-example-total span { color: var(--brand); font-weight: 700; }
+    .kf-example-note { margin-top: 16px; color: var(--ink-2); }
+
+    /* CALCULATOR */
+    .kf-calc { margin-top: 28px; background: var(--paper); border: 1px solid var(--line); border-radius: var(--r-lg); padding: clamp(24px, 4vw, 36px); display: grid; gap: 20px; }
+    .kf-field { display: grid; gap: 8px; }
+    .kf-field > span { font-weight: 600; font-size: 14px; color: var(--ink); }
+    .kf-field small { color: var(--ink-3); font-size: 13px; }
+    .kf-field select, .kf-field input {
+      width: 100%; padding: 14px 16px; font-size: 15px; font-family: var(--font-body);
+      color: var(--ink); background: var(--bg); border: 1px solid var(--line-strong);
+      border-radius: var(--r-md); transition: border-color 200ms var(--ease);
+    }
+    .kf-field select:focus, .kf-field input:focus { outline: none; border-color: var(--brand); }
+    .kf-calc-btn { justify-content: center; margin-top: 4px; }
+    .kf-result { margin-top: 24px; text-align: center; background: linear-gradient(135deg, var(--brand) 0%, #17457a 100%); color: var(--ink-on-deep); border-radius: var(--r-lg); padding: clamp(28px, 5vw, 44px); }
+    .kf-result-label { font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-on-deep-2); }
+    .kf-result-amount { font-family: var(--font-display); font-weight: 700; font-size: clamp(36px, 7vw, 56px); letter-spacing: -0.03em; margin: 8px 0; }
+    .kf-result-detail { color: var(--ink-on-deep-2); font-size: 14px; margin-bottom: 24px; }
+
+    /* DEEP CTA */
+    .kf-cta { text-align: center; background: linear-gradient(135deg, var(--brand-2) 0%, #1a6647 100%); border-radius: var(--r-xl); padding: clamp(40px, 6vw, 72px); }
+    .kf-cta h2 { font-family: var(--font-display); font-weight: 700; font-size: clamp(26px, 4vw, 42px); letter-spacing: -0.03em; color: var(--ink-on-deep); }
+    .kf-cta p { color: var(--ink-on-deep-2); max-width: 56ch; margin: 18px auto 30px; line-height: 1.6; }
+
+    /* CARDS */
+    .kf-cards { margin-top: 36px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+    .kf-card { background: var(--paper); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 28px 22px; }
+    .kf-card-ic { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 12px; background: color-mix(in srgb, var(--brand) 12%, transparent); color: var(--brand); margin-bottom: 18px; }
+    .kf-card-ic svg { width: 22px; height: 22px; }
+    .kf-card h3 { font-family: var(--font-display); font-weight: 700; font-size: 18px; letter-spacing: -0.01em; color: var(--ink); margin-bottom: 8px; }
+    .kf-card p { color: var(--ink-2); font-size: 14px; line-height: 1.6; }
+
+    .kf-legal { margin-top: clamp(28px, 4vw, 48px); display: grid; grid-template-columns: 1fr 1fr; gap: clamp(24px, 4vw, 56px); align-items: center; background: var(--paper); border: 1px solid var(--line); border-radius: var(--r-lg); padding: clamp(28px, 4vw, 44px); }
+    .kf-legal h3 { font-family: var(--font-display); font-weight: 700; font-size: 22px; letter-spacing: -0.02em; color: var(--ink); margin-bottom: 12px; }
+    .kf-legal p { color: var(--ink-2); line-height: 1.65; font-size: 15px; }
+    .kf-legal-list { list-style: none; display: grid; gap: 12px; }
+    .kf-legal-list li { display: flex; align-items: center; gap: 12px; font-weight: 500; color: var(--ink); }
+
+    /* GALLERY */
+    .kf-gallery { margin-top: 32px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    .kf-shot { position: relative; aspect-ratio: 4 / 3; border-radius: var(--r-lg); background: linear-gradient(135deg, var(--bg-alt), color-mix(in srgb, var(--brand) 8%, var(--bg-alt))); border: 1px dashed var(--line-strong); display: grid; place-items: center; gap: 10px; color: var(--ink-3); }
+    .kf-shot-ic svg { width: 40px; height: 40px; }
+    .kf-shot figcaption { font-size: 12px; font-family: var(--font-mono); letter-spacing: 0.08em; text-transform: uppercase; }
+
+    /* STATS */
+    .kf-stats { margin-top: 40px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+    .kf-stat { text-align: center; background: var(--paper); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 28px 18px; }
+    .kf-stat dt { font-family: var(--font-display); font-weight: 700; font-size: clamp(28px, 4vw, 42px); letter-spacing: -0.03em; color: var(--brand); font-variant-numeric: tabular-nums; }
+    .kf-stat dd { margin-top: 8px; font-size: 13px; color: var(--ink-2); line-height: 1.4; }
+
+    /* TESTIMONIALS */
+    .kf-quotes { margin-top: 36px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .kf-testi { background: var(--paper); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 28px 30px; }
+    .kf-testi p { font-size: 17px; line-height: 1.6; color: var(--ink); }
+    .kf-testi cite { display: block; margin-top: 16px; font-style: normal; font-size: 14px; color: var(--ink-2); }
+
+    /* FAQ */
+    .kf-faq { margin-top: 28px; display: grid; gap: 12px; }
+    .kf-faq details { background: var(--paper); border: 1px solid var(--line); border-radius: var(--r-md); overflow: hidden; }
+    .kf-faq summary { list-style: none; cursor: pointer; padding: 20px 24px; font-weight: 600; font-size: 16px; color: var(--ink); display: flex; justify-content: space-between; align-items: center; gap: 16px; }
+    .kf-faq summary::-webkit-details-marker { display: none; }
+    .kf-faq-ic { flex: none; width: 20px; height: 20px; position: relative; }
+    .kf-faq-ic::before, .kf-faq-ic::after { content: ''; position: absolute; background: var(--brand); border-radius: 2px; transition: transform 240ms var(--ease); }
+    .kf-faq-ic::before { top: 9px; left: 2px; right: 2px; height: 2px; }
+    .kf-faq-ic::after { left: 9px; top: 2px; bottom: 2px; width: 2px; }
+    .kf-faq details[open] .kf-faq-ic::after { transform: scaleY(0); }
+    .kf-faq p { padding: 0 24px 22px; color: var(--ink-2); line-height: 1.65; }
+
+    @media (max-width: 900px) {
+      .kf-cards { grid-template-columns: repeat(2, 1fr); }
+      .kf-stats { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 720px) {
+      .kf-split, .kf-legal, .kf-quotes { grid-template-columns: 1fr; }
+      .kf-gallery { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 480px) {
+      .kf-cards { grid-template-columns: 1fr; }
+    }
+  </style>
+</Base>
