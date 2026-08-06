@@ -373,8 +373,10 @@ const description = 'Masih memiliki kewajiban kafarat? Pelajari, hitung dengan k
       margin: 12px 0 0;
     }
 
-    /* HERO */
-    .kf-hero { padding: clamp(40px, 8vw, 80px) 0 clamp(24px, 5vw, 48px); }
+    /* HERO — top padding clears the fixed .nav (position:fixed, ~76px). */
+    .kf-hero { padding: clamp(104px, 14vw, 150px) 0 clamp(24px, 5vw, 48px); }
+    /* Anchor jumps (#kalkulator) must not hide under the fixed header. */
+    #kalkulator { scroll-margin-top: 88px; }
     .kf-hero-inner {
       position: relative;
       background: linear-gradient(135deg, var(--brand) 0%, #17457a 100%);
@@ -487,16 +489,27 @@ const description = 'Masih memiliki kewajiban kafarat? Pelajari, hitung dengan k
     .kf-faq details[open] .kf-faq-ic::after { transform: scaleY(0); }
     .kf-faq p { padding: 0 24px 22px; color: var(--ink-2); line-height: 1.65; }
 
-    @media (max-width: 900px) {
+    @media (max-width: 880px) {
+      .kf-hero-inner { padding: clamp(28px, 6vw, 56px); }
       .kf-cards { grid-template-columns: repeat(2, 1fr); }
-      .kf-stats { grid-template-columns: repeat(2, 1fr); }
-    }
-    @media (max-width: 720px) {
       .kf-split, .kf-legal, .kf-quotes { grid-template-columns: 1fr; }
+      .kf-split { gap: 24px; }
+    }
+    @media (max-width: 640px) {
+      .kf-stats { grid-template-columns: repeat(2, 1fr); }
       .kf-gallery { grid-template-columns: repeat(2, 1fr); }
+      .kf-example-row { flex-direction: column; gap: 4px; align-items: flex-start; }
+      .kf-example-row span:last-child { font-size: 16px; }
+      .kf-quote p { font-size: 16px; }
+      .kf-testi p { font-size: 15.5px; }
     }
     @media (max-width: 480px) {
       .kf-cards { grid-template-columns: 1fr; }
+      .kf-gallery { grid-template-columns: 1fr; }
+      .kf-hero-ctas .btn { width: 100%; justify-content: center; }
+      .kf-band, .kf-example, .kf-calc { padding: 22px 20px; }
+      .kf-faq summary { padding: 16px 18px; font-size: 15px; }
+      .kf-faq p { padding: 0 18px 18px; }
     }
   </style>
 </Base>
