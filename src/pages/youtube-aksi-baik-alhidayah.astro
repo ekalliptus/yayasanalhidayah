@@ -79,16 +79,28 @@ const description = 'Masih memiliki kewajiban kafarat? Pelajari, hitung dengan k
     <section class="kf-hero">
       <div class="container">
         <div class="kf-hero-inner on-deep" data-reveal>
-          <img class="kf-hero-bg" src="/hero/hero-3.webp" alt="" aria-hidden="true" width="1200" height="750" fetchpriority="high" decoding="sync" />
-          <div class="eyebrow" style="color: var(--ink-on-deep-2);">Yayasan Alhidayah · Program Kafarat</div>
-          <h1 class="display kf-h1">Masih Memiliki<br/>Kewajiban <em>Kafarat?</em></h1>
-          <p class="kf-hero-sub">Pelajari, hitung, dan tunaikan kafarat sesuai syariat melalui penyaluran yang amanah dan tepat sasaran.</p>
-          <div class="ctas kf-hero-ctas">
-            <a class="btn btn-primary" href="#kalkulator">
-              Hitung Kafarat Saya <span class="arrow"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
-            </a>
-            <a class="btn btn-ghost" href={PAYMENT_URL} target="_blank" rel="noopener noreferrer">Tunaikan Sekarang</a>
+          <div class="kf-hero-copy">
+            <div class="eyebrow" style="color: var(--ink-on-deep-2);">Yayasan Alhidayah · Program Kafarat</div>
+            <h1 class="display kf-h1">Masih Memiliki<br/>Kewajiban <em>Kafarat?</em></h1>
+            <p class="kf-hero-sub">Pelajari, hitung, dan tunaikan kafarat sesuai syariat melalui penyaluran yang amanah dan tepat sasaran.</p>
+            <div class="ctas kf-hero-ctas">
+              <a class="btn btn-primary" href="#kalkulator">
+                Hitung Kafarat Saya <span class="arrow"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+              </a>
+              <a class="btn btn-ghost" href={PAYMENT_URL} target="_blank" rel="noopener noreferrer">Tunaikan Sekarang</a>
+            </div>
           </div>
+          {/* The poster carries its own headline text, so it sits beside the
+              copy at full opacity rather than behind it as a dimmed backdrop. */}
+          <img
+            class="kf-hero-art"
+            src="/hero/hero-kafarat.webp"
+            alt="Paket Kafarat Yayasan Alhidayah — disalurkan kepada santri dan fakir miskin"
+            width="900"
+            height="900"
+            fetchpriority="high"
+            decoding="sync"
+          />
         </div>
       </div>
     </section>
@@ -390,20 +402,22 @@ const description = 'Masih memiliki kewajiban kafarat? Pelajari, hitung dengan k
       border-radius: var(--r-xl);
       padding: clamp(36px, 6vw, 72px);
       overflow: hidden;
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+      gap: clamp(28px, 4vw, 56px);
+      align-items: center;
     }
     .kf-hero-inner::after {
       content: ''; position: absolute; inset: 0;
       background: radial-gradient(120% 120% at 100% 0%, rgba(201,162,39,0.22), transparent 55%);
       pointer-events: none;
     }
-    /* Photo sits between the brand gradient and the ::after tint; kept dim so
-       the headline keeps its contrast ratio over the deep background. */
-    .kf-hero-bg {
-      position: absolute; inset: 0; z-index: 0;
-      width: 100%; height: 100%; object-fit: cover;
-      opacity: 0.26;
+    .kf-hero-copy, .kf-hero-art { position: relative; z-index: 1; }
+    .kf-hero-art {
+      width: 100%; height: auto; display: block;
+      border-radius: var(--r-lg);
+      box-shadow: 0 30px 60px -30px rgba(0, 0, 0, 0.55);
     }
-    .kf-hero-inner > *:not(.kf-hero-bg) { position: relative; z-index: 1; }
     .kf-h1 { color: var(--ink-on-deep); font-size: clamp(34px, 6vw, 64px); margin: 18px 0 0; }
     .kf-h1 em { color: var(--highlight); font-style: normal; }
     .kf-hero-sub { color: var(--ink-on-deep-2); font-size: clamp(16px, 1.5vw, 19px); line-height: 1.6; margin: 20px 0 0; max-width: 52ch; }
@@ -510,7 +524,9 @@ const description = 'Masih memiliki kewajiban kafarat? Pelajari, hitung dengan k
     .kf-faq p { padding: 0 24px 22px; color: var(--ink-2); line-height: 1.65; }
 
     @media (max-width: 880px) {
-      .kf-hero-inner { padding: clamp(28px, 6vw, 56px); }
+      .kf-hero-inner { padding: clamp(28px, 6vw, 56px); grid-template-columns: 1fr; }
+      /* Copy first on narrow screens; the poster follows below it. */
+      .kf-hero-art { max-width: 420px; margin: 0 auto; }
       .kf-cards { grid-template-columns: repeat(2, 1fr); }
       .kf-split, .kf-legal, .kf-quotes { grid-template-columns: 1fr; }
       .kf-split { gap: 24px; }
