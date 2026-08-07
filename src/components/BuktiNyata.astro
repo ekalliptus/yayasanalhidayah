@@ -1,0 +1,43 @@
+---
+import { getGallery } from '../lib/supabase/queries/marketing';
+
+// Static fallback so the section never goes blank before the `gallery` table is
+// seeded. CMS rows (bg / title / meta) win when present.
+const fallbackItems = [
+  { bg: '/dokumentasi/dok-1.webp', title: 'Serah terima bantuan kepada penerima manfaat', meta: 'Bandung Barat' },
+  { bg: '/dokumentasi/dok-2.webp', title: 'Penyaluran bantuan di halaman rumah warga', meta: 'Bandung Barat' },
+  { bg: '/dokumentasi/dok-3.webp', title: 'Bantuan diterima langsung oleh penerima manfaat', meta: 'Bandung Barat' },
+];
+
+const rows = await getGallery(Astro.locals.supabase);
+const items = rows.length > 0
+  ? rows.map((g) => ({ bg: g.bg, title: g.title, meta: g.meta || '' }))
+  : fallbackItems;
+---
+
+<section class="section-pad" id="bukti-nyata">
+  <div class="container">
+    <div class="programs-head">
+      <div data-reveal>
+        <div class="eyebrow"><span class="section-num">03 / Bukti Nyata</span></div>
+        <h2 class="display" style="font-size: clamp(32px, 4vw, 52px);">
+          Amanah yang<br/><em>sampai ke tangan</em> penerima.
+        </h2>
+      </div>
+      <p class="lede" data-reveal>
+        Setiap penyaluran kami dokumentasikan. Bukan untuk dipamerkan, tapi agar Anda tahu persis ke mana titipan amanah itu pergi.
+      </p>
+    </div>
+    <div class="bukti-grid">
+      {items.map((it) => (
+        <figure class="bukti-item" data-reveal>
+          <img src={it.bg} alt={it.title} loading="lazy" decoding="async" width="720" height="960" />
+          <figcaption>
+            <span class="bukti-title">{it.title}</span>
+            {it.meta && <span class="bukti-meta">{it.meta}</span>}
+          </figcaption>
+        </figure>
+      ))}
+    </div>
+  </div>
+</section>

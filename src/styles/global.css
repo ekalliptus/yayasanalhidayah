@@ -896,9 +896,46 @@ section { position: relative; }
 }
 .program-progress.is-empty .raised strong { color: var(--ink-2); }
 
+/* Bukti Nyata — documentation gallery */
+.bukti-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 28px;
+}
+.bukti-item {
+  position: relative;
+  margin: 0;
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  border: 1px solid var(--line);
+  background: var(--bg-alt);
+  aspect-ratio: 3 / 4;
+}
+.bukti-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 800ms var(--ease);
+}
+.bukti-item:hover img { transform: scale(1.04); }
+.bukti-item figcaption {
+  position: absolute;
+  inset: auto 0 0 0;
+  padding: 48px 20px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background: linear-gradient(to top, rgba(20, 34, 56, 0.88), rgba(20, 34, 56, 0));
+  color: var(--ink-on-deep);
+}
+.bukti-title { font-size: 15px; line-height: 1.4; font-weight: 500; }
+.bukti-meta { font-size: 13px; opacity: 0.75; }
+
 @media (max-width: 1024px) {
   .programs-grid { grid-template-columns: repeat(2, 1fr); gap: 20px; }
   .programs-grid .program-card:last-child { grid-column: 1 / -1; }
+  .bukti-grid { gap: 20px; }
 }
 @media (max-width: 880px) {
   .programs-head { grid-template-columns: 1fr; gap: 16px; }
@@ -907,6 +944,7 @@ section { position: relative; }
 @media (max-width: 640px) {
   .programs-grid { grid-template-columns: 1fr; gap: 20px; }
   .programs-grid .program-card:last-child { grid-column: auto; }
+  .bukti-grid { grid-template-columns: 1fr; gap: 20px; }
 }
 @media (max-width: 480px) {
   .programs-head h2 { font-size: clamp(28px, 7vw, 36px); }
