@@ -45,3 +45,7 @@ campaigns/
 # build artifacts
 .build.log
 .gstack/
+
+# AI coding agent local state
+.claude/
+.zcode/
