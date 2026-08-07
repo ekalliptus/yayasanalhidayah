@@ -65,6 +65,7 @@ const galeri = [
   { src: '/dokumentasi/dok-1.webp', alt: 'Serah terima bantuan kepada penerima manfaat' },
   { src: '/dokumentasi/dok-2.webp', alt: 'Penyaluran bantuan di halaman rumah warga' },
   { src: '/dokumentasi/dok-3.webp', alt: 'Bantuan diterima langsung oleh penerima manfaat' },
+  { src: '/dokumentasi/dok-4.webp', alt: 'Penyerahan bantuan kepada penerima manfaat' },
 ];
 
 const title = 'Kalkulator & Tunaikan Kafarat — Yayasan Alhidayah';
@@ -489,7 +490,9 @@ const description = 'Masih memiliki kewajiban kafarat? Pelajari, hitung dengan k
     .kf-legal-list li { display: flex; align-items: center; gap: 12px; font-weight: 500; color: var(--ink); }
 
     /* GALLERY */
-    .kf-gallery { margin-top: 32px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    /* auto-fit so the row count follows the photo count without fixed
+       breakpoints — the gallery grows as more documentation is added. */
+    .kf-gallery { margin-top: 32px; display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 16px; }
     .kf-shot { position: relative; margin: 0; aspect-ratio: 3 / 4; border-radius: var(--r-lg); overflow: hidden; background: var(--bg-alt); border: 1px solid var(--line); }
     .kf-shot img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 800ms var(--ease); }
     .kf-shot:hover img { transform: scale(1.04); }
