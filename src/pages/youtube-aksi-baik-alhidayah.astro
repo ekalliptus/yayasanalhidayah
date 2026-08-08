@@ -9,9 +9,8 @@ import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import WhatsAppFab from '../components/WhatsAppFab.astro';
 
-// Crowdfunding endpoints (from the doc). Both CTAs route to the campaign form.
+// Crowdfunding endpoint (from the doc). CTA routes to the campaign form.
 const PAYMENT_URL = 'https://donasi.yayasanalhidayah.com/campaign/tunaikan-kafarat-hari-ini/donasi';
-const REKENING_URL = 'https://donasi.yayasanalhidayah.com/campaign/tunaikan-kafarat-hari-ini/invoice/INV-260803VP99Z';
 
 // Calculator types: per-violation nominal (1 mud = Rp15.000).
 const kafaratTypes = [
@@ -19,7 +18,6 @@ const kafaratTypes = [
   { id: 'jima', label: "Kafarat Jima'", per: 900_000, note: '60 fakir miskin × 1 mud (Rp15.000)' },
   { id: 'ila', label: 'Kafarat Ila', per: 150_000, note: '10 fakir miskin × 1 mud (Rp15.000)' },
   { id: 'dzihar', label: 'Kafarat Dzihar', per: 900_000, note: '60 fakir miskin × 1 mud (Rp15.000)' },
-  { id: 'lainnya', label: 'Lainnya (nominal manual)', per: 0, note: 'Masukkan nominal sendiri' },
 ];
 
 const perlu = [
@@ -178,11 +176,6 @@ const description = 'Masih memiliki kewajiban kafarat? Pelajari, hitung dengan k
             <small id="kf-type-note">{kafaratTypes[0].note}</small>
           </label>
 
-          <label class="kf-field" id="kf-manual-field" hidden>
-            <span>Nominal per Pelanggaran (Rp)</span>
-            <input id="kf-manual" type="number" inputmode="numeric" min="0" step="1000" placeholder="mis. 150000" />
-          </label>
-
           <label class="kf-field">
             <span>Berapa Kali Melanggar?</span>
             <input id="kf-count" type="number" inputmode="numeric" min="1" step="1" value="1" />
@@ -214,7 +207,6 @@ const description = 'Masih memiliki kewajiban kafarat? Pelajari, hitung dengan k
             <a class="btn btn-primary" href={PAYMENT_URL} target="_blank" rel="noopener noreferrer">
               Tunaikan Kafarat Saya <span class="arrow"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
             </a>
-            <a class="btn btn-ghost" href={REKENING_URL} target="_blank" rel="noopener noreferrer">Transfer via Rekening</a>
           </div>
         </div>
       </div>
@@ -334,8 +326,6 @@ const description = 'Masih memiliki kewajiban kafarat? Pelajari, hitung dengan k
     (function () {
       var typeEl = document.getElementById('kf-type');
       var noteEl = document.getElementById('kf-type-note');
-      var manualField = document.getElementById('kf-manual-field');
-      var manualEl = document.getElementById('kf-manual');
       var countEl = document.getElementById('kf-count');
       var submit = document.getElementById('kf-submit');
       var result = document.getElementById('kf-result');
@@ -345,29 +335,26 @@ const description = 'Masih memiliki kewajiban kafarat? Pelajari, hitung dengan k
       if (!typeEl || !submit) return;
 
       var rp = function (n) { return 'Rp' + (n || 0).toLocaleString('id-ID'); };
-
       function selected() { return typeEl.options[typeEl.selectedIndex]; }
 
       var notes = {
         sumpah: '10 fakir miskin × 1 mud (Rp15.000) = Rp150.000',
         jima: '60 fakir miskin × 1 mud (Rp15.000) = Rp900.000',
         ila: '10 fakir miskin × 1 mud (Rp15.000) = Rp150.000',
-        dzihar: '60 fakir miskin × 1 mud (Rp15.000) = Rp900.000',
-        lainnya: 'Masukkan nominal per pelanggaran di bawah.'
+        dzihar: '60 fakir miskin × 1 mud (Rp15.000) = Rp900.000'
       };
       function refreshNote() {
         var opt = selected();
-        manualField.hidden = opt.value !== 'lainnya';
         noteEl.textContent = notes[opt.value] || '';
       }
 
       function calc() {
         var opt = selected();
-        var per = opt.value === 'lainnya' ? Math.max(0, parseInt(manualEl.value || '0', 10)) : parseInt(opt.getAttribute('data-per') || '0', 10);
+        var per = parseInt(opt.getAttribute('data-per') || '0', 10);
         var count = Math.max(1, parseInt(countEl.value || '1', 10));
         var total = per * count;
         amountEl.textContent = rp(total);
-        detailEl.textContent = opt.textContent.replace(/\s*\(nominal manual\)/, '') + ' · ' + rp(per) + ' × ' + count + ' pelanggaran';
+        detailEl.textContent = opt.textContent + ' · ' + rp(per) + ' × ' + count + ' pelanggaran';
         cta.href = PAYMENT_URL;
         result.hidden = false;
         result.scrollIntoView({ behavior: 'smooth', block: 'center' });
