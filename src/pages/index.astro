@@ -26,7 +26,8 @@ const [latestPrograms, heroSlides, trustLogos, whyUs] = await Promise.all([
 ]);
 ---
 
-<Base title="Yayasan Alhidayah — Amanah, Tepat Sasaran, Sesuai Syariat">
+{/* Title/description come from the SEO admin (homepage fields). */}
+<Base kind="home" title="Yayasan Alhidayah — Amanah, Tepat Sasaran, Sesuai Syariat">
   <Header />
   <Hero slides={heroSlides} />
   <TrustMarquee logos={trustLogos} />

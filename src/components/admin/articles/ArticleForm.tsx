@@ -10,7 +10,6 @@ import { Badge } from '@/components/ui/badge';
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Toaster } from '@/components/ui/sonner';
 import { toast } from 'sonner';
 import { Icon } from '../icon';
@@ -18,6 +17,9 @@ import { toSlug } from '@/lib/slug';
 import { uploadMedia } from '@/lib/upload';
 import type { ArticleStatus, Category, Tag } from '@/lib/supabase/types';
 import SeoAnalyzer from './SeoAnalyzer';
+import ArticleSeoPanel, { type ArticleSeoValue } from './ArticleSeoPanel';
+import { runSeoChecks } from './seo-checks';
+import type { SeoSettings, RobotsToken } from '@/lib/seo';
 
 export interface ArticleInitial {
   id: string | null;
@@ -35,7 +37,20 @@ export interface ArticleInitial {
   meta_title: string;
   meta_description: string;
   focus_keyword: string;
+  secondary_keywords: string[];
+  canonical_url: string;
+  robots: RobotsToken[] | null;
+  og_title: string;
+  og_description: string;
   og_image: string;
+  twitter_title: string;
+  twitter_description: string;
+  twitter_image: string;
+  schema_type: string;
+  schema_data: Record<string, unknown>;
+  is_pillar: boolean;
+  sitemap_include: boolean;
+  seo_score: number | null;
   tag_ids: string[];
 }
 
@@ -43,6 +58,8 @@ interface Props {
   initial: ArticleInitial;
   categories: Category[];
   tags: Tag[];
+  seoSettings: SeoSettings;
+  usedFocusKeywords?: string[];
 }
 
 const NO_CATEGORY = '__none__';
@@ -69,7 +86,7 @@ function focalToObjectPosition(focal: string): string {
   return `${x}% ${y}%`;
 }
 
-export default function ArticleForm({ initial, categories, tags }: Props) {
+export default function ArticleForm({ initial, categories, tags, seoSettings, usedFocusKeywords = [] }: Props) {
   const [title, setTitle] = React.useState(initial.title);
   const [slug, setSlug] = React.useState(initial.slug);
   const [slugTouched, setSlugTouched] = React.useState(Boolean(initial.slug));
@@ -86,6 +103,20 @@ export default function ArticleForm({ initial, categories, tags }: Props) {
   const [metaDesc, setMetaDesc] = React.useState(initial.meta_description);
   const [saving, setSaving] = React.useState(false);
   const [focusKeyword, setFocusKeyword] = React.useState(initial.focus_keyword ?? '');
+  const [secondaryKeywords, setSecondaryKeywords] = React.useState(initial.secondary_keywords ?? []);
+  const [canonicalUrl, setCanonicalUrl] = React.useState(initial.canonical_url ?? '');
+  const [robots, setRobots] = React.useState<RobotsToken[] | null>(initial.robots ?? null);
+  const [ogTitle, setOgTitle] = React.useState(initial.og_title ?? '');
+  const [ogDescription, setOgDescription] = React.useState(initial.og_description ?? '');
+  const [ogImage, setOgImage] = React.useState(initial.og_image ?? '');
+  const [twitterTitle, setTwitterTitle] = React.useState(initial.twitter_title ?? '');
+  const [twitterDescription, setTwitterDescription] = React.useState(initial.twitter_description ?? '');
+  const [twitterImage, setTwitterImage] = React.useState(initial.twitter_image ?? '');
+  const [schemaType, setSchemaType] = React.useState(initial.schema_type ?? 'BlogPosting');
+  const [schemaData, setSchemaData] = React.useState<Record<string, unknown>>(initial.schema_data ?? {});
+  const [isPillar, setIsPillar] = React.useState(initial.is_pillar ?? false);
+  const [sitemapInclude, setSitemapInclude] = React.useState(initial.sitemap_include ?? true);
+  const [seoScore, setSeoScore] = React.useState(initial.seo_score ?? 0);
   const [contentText, setContentText] = React.useState('');
   const [contentHtml, setContentHtml] = React.useState('');
   // Autosave indicator: 'idle' | 'saving' | 'saved' | 'error'
@@ -217,17 +248,32 @@ export default function ArticleForm({ initial, categories, tags }: Props) {
           meta_title: metaTitle || null,
           meta_description: metaDesc || null,
           focus_keyword: focusKeyword || null,
-          og_image: cover || null,
+          secondary_keywords: secondaryKeywords,
+          canonical_url: canonicalUrl || null,
+          robots,
+          og_title: ogTitle || null,
+          og_description: ogDescription || null,
+          og_image: ogImage || cover || null,
+          twitter_title: twitterTitle || null,
+          twitter_description: twitterDescription || null,
+          twitter_image: twitterImage || null,
+          schema_type: schemaType,
+          schema_data: schemaData,
+          is_pillar: isPillar,
+          sitemap_include: sitemapInclude,
+          seo_score: runSeoChecks({ focusKeyword, title, slug, metaTitle, metaDesc, excerpt, text: editorState.current.text, html: editorState.current.html, hasCover: Boolean(cover), usedFocusKeywords }).percentage,
           tag_ids: tagIds,
         }),
       });
-      const body = (await res.json()) as { ok: boolean; id?: string; slug?: string; error?: string };
+      const body = (await res.json()) as { ok: boolean; id?: string; slug?: string; seo_score?: number; sitemap_include?: boolean; error?: string };
       if (!body.ok) {
         if (!silent) toast.error(body.error ?? 'Gagal menyimpan');
         else setAutosave('error');
         return false;
       }
       setStatus(effectiveStatus);
+      if (typeof body.seo_score === 'number') setSeoScore(body.seo_score);
+      if (typeof body.sitemap_include === 'boolean') setSitemapInclude(body.sitemap_include);
       if (silent) {
         setAutosave('saved');
         lastAutosaveAt.current = Date.now();
@@ -263,7 +309,7 @@ export default function ArticleForm({ initial, categories, tags }: Props) {
     return () => clearTimeout(t);
     // editorState is a ref; contentText/contentHtml mirror it for dependency tracking.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [title, slug, excerpt, cover, coverRatio, coverFocal, coverSize, status, categoryId, tagIds, metaTitle, metaDesc, focusKeyword, contentText, contentHtml, initial.id]);
+  }, [title, slug, excerpt, cover, coverRatio, coverFocal, coverSize, status, categoryId, tagIds, metaTitle, metaDesc, focusKeyword, secondaryKeywords, canonicalUrl, robots, ogTitle, ogDescription, ogImage, twitterTitle, twitterDescription, twitterImage, schemaType, schemaData, isPillar, sitemapInclude, contentText, contentHtml, initial.id]);
 
   return (
     <div className="space-y-4">
@@ -274,6 +320,7 @@ export default function ArticleForm({ initial, categories, tags }: Props) {
           </a>
           <h1 className="text-xl font-semibold">{initial.id ? 'Edit Artikel' : 'Artikel Baru'}</h1>
           <Badge variant="outline" className="capitalize">{status}</Badge>
+          <Badge variant="outline" className={seoScore >= 71 ? 'border-emerald-500/30 text-emerald-400' : seoScore >= 41 ? 'border-amber-500/30 text-amber-400' : 'border-red-500/30 text-red-400'}>SEO {seoScore}/100</Badge>
           <AutosaveBadge state={autosave} />
         </div>
         <div className="flex items-center gap-2">
@@ -466,40 +513,33 @@ export default function ArticleForm({ initial, categories, tags }: Props) {
           </Card>
 
           <Card>
-            <CardHeader className="pb-3"><CardTitle className="text-sm">SEO & Ringkasan</CardTitle></CardHeader>
-            <CardContent>
-              <Tabs defaultValue="excerpt">
-                <TabsList className="grid w-full grid-cols-2">
-                  <TabsTrigger value="excerpt">Ringkasan</TabsTrigger>
-                  <TabsTrigger value="seo">SEO</TabsTrigger>
-                </TabsList>
-                <TabsContent value="excerpt" className="space-y-2 pt-3">
-                  <div className="space-y-1.5">
-                    <Label className="text-xs">Slug</Label>
-                    <Input
-                      value={slug}
-                      onChange={(e) => { setSlug(toSlug(e.target.value)); setSlugTouched(true); }}
-                      placeholder="judul-artikel"
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label className="text-xs">Ringkasan</Label>
-                    <Textarea value={excerpt} onChange={(e) => setExcerpt(e.target.value)} rows={3} placeholder="Ringkasan singkat…" />
-                  </div>
-                </TabsContent>
-                <TabsContent value="seo" className="space-y-2 pt-3">
-                  <div className="space-y-1.5">
-                    <Label className="text-xs">Meta title</Label>
-                    <Input value={metaTitle} onChange={(e) => setMetaTitle(e.target.value)} placeholder={title} />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label className="text-xs">Meta description</Label>
-                    <Textarea value={metaDesc} onChange={(e) => setMetaDesc(e.target.value)} rows={3} placeholder={excerpt} />
-                  </div>
-                </TabsContent>
-              </Tabs>
+            <CardHeader className="pb-3"><CardTitle className="text-sm">Ringkasan & URL</CardTitle></CardHeader>
+            <CardContent className="space-y-3">
+              <div className="space-y-1.5">
+                <Label className="text-xs">Slug</Label>
+                <Input value={slug} onChange={(e) => { setSlug(toSlug(e.target.value)); setSlugTouched(true); }} placeholder="judul-artikel" />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs">Ringkasan</Label>
+                <Textarea value={excerpt} onChange={(e) => setExcerpt(e.target.value)} rows={3} placeholder="Ringkasan singkat…" />
+              </div>
             </CardContent>
           </Card>
+
+          <ArticleSeoPanel
+            value={{ focusKeyword, secondaryKeywords, metaTitle, metaDescription: metaDesc, canonicalUrl, robots, ogTitle, ogDescription, ogImage, twitterTitle, twitterDescription, twitterImage, schemaType, schemaData, isPillar, sitemapInclude }}
+            onChange={(key, value) => {
+              const setters: Record<keyof ArticleSeoValue, (v: any) => void> = {
+                focusKeyword: setFocusKeyword, secondaryKeywords: setSecondaryKeywords, metaTitle: setMetaTitle,
+                metaDescription: setMetaDesc, canonicalUrl: setCanonicalUrl, robots: setRobots,
+                ogTitle: setOgTitle, ogDescription: setOgDescription, ogImage: setOgImage,
+                twitterTitle: setTwitterTitle, twitterDescription: setTwitterDescription, twitterImage: setTwitterImage,
+                schemaType: setSchemaType, schemaData: setSchemaData, isPillar: setIsPillar, sitemapInclude: setSitemapInclude,
+              };
+              setters[key](value);
+            }}
+            title={title} slug={slug} excerpt={excerpt} coverImage={cover} settings={seoSettings}
+          />
 
           <SeoAnalyzer
             title={title}
@@ -511,7 +551,9 @@ export default function ArticleForm({ initial, categories, tags }: Props) {
             contentHtml={contentHtml}
             hasCover={Boolean(cover)}
             focusKeyword={focusKeyword}
+            usedFocusKeywords={usedFocusKeywords}
             onFocusKeywordChange={setFocusKeyword}
+            onScoreChange={setSeoScore}
           />
         </div>
       </div>

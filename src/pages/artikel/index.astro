@@ -4,17 +4,38 @@ import Base from '../../layouts/Base.astro';
 import Header from '../../components/Header.astro';
 import Footer from '../../components/Footer.astro';
 import BlogCard from '../../components/BlogCard.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
 import { listPublishedArticles } from '@/lib/supabase/queries/articles';
 
-const page = Math.max(1, Number(Astro.url.searchParams.get('page') ?? '1'));
-const { articles, totalPages } = await listPublishedArticles(Astro.locals.supabase, { page, perPage: 9 });
+const requestedPage = Number(Astro.url.searchParams.get('page') ?? '1');
+const page = Number.isInteger(requestedPage) && requestedPage > 0 ? requestedPage : 1;
+const categorySlug = Astro.url.searchParams.get('category') || undefined;
+const tagSlug = categorySlug ? undefined : Astro.url.searchParams.get('tag') || undefined;
+const search = categorySlug || tagSlug ? undefined : Astro.url.searchParams.get('q')?.trim().slice(0, 100) || undefined;
+const archiveParam = categorySlug ? `category=${encodeURIComponent(categorySlug)}` : tagSlug ? `tag=${encodeURIComponent(tagSlug)}` : search ? `q=${encodeURIComponent(search)}` : '';
+const archiveCanonical = `/artikel${archiveParam ? `?${archiveParam}` : ''}`;
+const archivePageCanonical = page > 1 ? `${archiveCanonical}${archiveParam ? '&' : '?'}page=${page}` : archiveCanonical;
+const archiveBaseTitle = categorySlug ? `Artikel Kategori ${categorySlug.replace(/-/g, ' ')}` : tagSlug ? `Artikel Tag ${tagSlug.replace(/-/g, ' ')}` : search ? `Hasil pencarian “${search}”` : 'Artikel';
+const archiveTitle = page > 1 ? `${archiveBaseTitle} — Halaman ${page}` : archiveBaseTitle;
+const { articles, totalPages } = await listPublishedArticles(Astro.locals.supabase, { page, perPage: 9, categorySlug, tagSlug, search });
+if (page > totalPages) {
+  const notFound = await Astro.rewrite('/404');
+  return new Response(notFound.body, { status: 404, statusText: 'Not Found', headers: notFound.headers });
+}
 ---
 
 <Base
-  title="Artikel — Yayasan Alhidayah"
+  kind="archive"
+  page={page}
+  noindex={Boolean(search)}
+  title={archiveTitle}
+  canonical={archivePageCanonical}
   description="Artikel dan kabar terbaru seputar kegiatan Yayasan Alhidayah: wakaf mushaf, kafarat, fidyah, dan bantuan sosial."
+  schemaType="CollectionPage"
+  breadcrumbs={[{ name: 'Beranda', url: '/' }, { name: 'Artikel', url: '/artikel' }, ...(archiveParam ? [{ name: archiveTitle, url: archiveCanonical }] : [])]}
 >
   <Header base="/" />
+  <Breadcrumbs items={[{ name: 'Beranda', url: '/' }, { name: 'Artikel', url: '/artikel' }]} />
   <main id="main-content">
     <section class="section-pad" style="padding-top: 140px;">
       <div class="container">
@@ -24,6 +45,11 @@ const { articles, totalPages } = await listPublishedArticles(Astro.locals.supaba
           <p class="lede" style="max-width: 640px; margin-top: 16px;">
             Kabar dari lapangan, update program, dan refleksi seputar amal dan kebaikan yang kami amanahkan.
           </p>
+          <form action="/artikel" method="get" class="article-search" role="search">
+            <label class="sr-only" for="article-q">Cari artikel</label>
+            <input id="article-q" type="search" name="q" value={search ?? ''} placeholder="Cari artikel…" maxlength="100" />
+            <button class="btn btn-primary" type="submit">Cari</button>
+          </form>
         </div>
       </div>
     </section>
@@ -68,11 +94,11 @@ const { articles, totalPages } = await listPublishedArticles(Astro.locals.supaba
         {totalPages > 1 && (
           <nav class="blog-pagination" aria-label="Navigasi halaman" data-reveal>
             {page > 1 && (
-              <a href={`/artikel?page=${page - 1}`} class="btn btn-ghost">← Sebelumnya</a>
+              <a href={`${archiveCanonical}${archiveParam ? '&' : '?'}page=${page - 1}`} class="btn btn-ghost">← Sebelumnya</a>
             )}
             <span class="blog-pagination__info">Halaman {page} dari {totalPages}</span>
             {page < totalPages && (
-              <a href={`/artikel?page=${page + 1}`} class="btn btn-ghost">Selanjutnya →</a>
+              <a href={`${archiveCanonical}${archiveParam ? '&' : '?'}page=${page + 1}`} class="btn btn-ghost">Selanjutnya →</a>
             )}
           </nav>
         )}
@@ -83,6 +109,10 @@ const { articles, totalPages } = await listPublishedArticles(Astro.locals.supaba
 </Base>
 
 <style>
+  .article-search { display: flex; gap: 10px; max-width: 520px; margin-top: 24px; }
+  .article-search input { flex: 1; min-width: 0; border: 1px solid var(--line-strong); border-radius: var(--r-sm); background: var(--bg); color: var(--ink); padding: 10px 14px; }
+  .article-search input:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+  .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
   .blog-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));

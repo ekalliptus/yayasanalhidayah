@@ -78,141 +78,6 @@ export type Database = {
         }
         Relationships: []
       }
-      programs: {
-        Row: {
-          id: string
-          title: string
-          category: string
-          tag: string
-          slug: string
-          image: string
-          alt: string
-          description: string
-          donasi_url: string
-          sort_order: number
-          is_published: boolean
-          created_at: string
-          updated_at: string
-          target_amount: number | null
-          raised_amount: number | null
-          donatur_count: number | null
-          days_left: number | null
-          progress_pct: number | null
-          wp_campaign_id: number | null
-          last_synced_at: string | null
-        }
-        Insert: {
-          id?: string
-          title: string
-          category: string
-          tag?: string
-          slug: string
-          image: string
-          alt?: string
-          description: string
-          donasi_url: string
-          sort_order?: number
-          is_published?: boolean
-          created_at?: string
-          updated_at?: string
-          target_amount?: number | null
-          raised_amount?: number | null
-          donatur_count?: number | null
-          days_left?: number | null
-          progress_pct?: number | null
-          wp_campaign_id?: number | null
-          last_synced_at?: string | null
-        }
-        Update: {
-          id?: string
-          title?: string
-          category?: string
-          tag?: string
-          slug?: string
-          image?: string
-          alt?: string
-          description?: string
-          donasi_url?: string
-          sort_order?: number
-          is_published?: boolean
-          created_at?: string
-          updated_at?: string
-          target_amount?: number | null
-          raised_amount?: number | null
-          donatur_count?: number | null
-          days_left?: number | null
-          progress_pct?: number | null
-          wp_campaign_id?: number | null
-          last_synced_at?: string | null
-        }
-        Relationships: []
-      }
-      trust_logos: {
-        Row: {
-          id: string
-          name: string
-          src: string
-          url: string
-          sort_order: number
-          is_published: boolean
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          name: string
-          src: string
-          url?: string
-          sort_order?: number
-          is_published?: boolean
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          name?: string
-          src?: string
-          url?: string
-          sort_order?: number
-          is_published?: boolean
-          created_at?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
-      why_us: {
-        Row: {
-          id: string
-          n: string
-          title: string
-          descr: string
-          sort_order: number
-          is_published: boolean
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          n: string
-          title: string
-          descr: string
-          sort_order?: number
-          is_published?: boolean
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          n?: string
-          title?: string
-          descr?: string
-          sort_order?: number
-          is_published?: boolean
-          created_at?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
       article_tags: {
         Row: {
           article_id: string
@@ -246,73 +111,112 @@ export type Database = {
       articles: {
         Row: {
           author_id: string | null
+          canonical_url: string | null
           category_id: string | null
           content: Json | null
           content_html: string | null
-          cover_image: string | null
           cover_focal: string | null
+          cover_image: string | null
           cover_ratio: string | null
           cover_size: string | null
           created_at: string
           excerpt: string | null
           focus_keyword: string | null
           id: string
+          is_pillar: boolean
           meta_description: string | null
           meta_title: string | null
+          og_description: string | null
           og_image: string | null
+          og_title: string | null
           published_at: string | null
           reading_time: number | null
+          robots: string[] | null
+          schema_data: Json
+          schema_type: string | null
+          secondary_keywords: string[] | null
+          seo_score: number | null
+          sitemap_include: boolean
           slug: string
           status: string
           title: string
+          twitter_description: string | null
+          twitter_image: string | null
+          twitter_title: string | null
           updated_at: string
           view_count: number
         }
         Insert: {
           author_id?: string | null
+          canonical_url?: string | null
           category_id?: string | null
           content?: Json | null
           content_html?: string | null
-          cover_image?: string | null
           cover_focal?: string | null
+          cover_image?: string | null
           cover_ratio?: string | null
           cover_size?: string | null
           created_at?: string
           excerpt?: string | null
           focus_keyword?: string | null
           id?: string
+          is_pillar?: boolean
           meta_description?: string | null
           meta_title?: string | null
+          og_description?: string | null
           og_image?: string | null
+          og_title?: string | null
           published_at?: string | null
           reading_time?: number | null
+          robots?: string[] | null
+          schema_data?: Json
+          schema_type?: string | null
+          secondary_keywords?: string[] | null
+          seo_score?: number | null
+          sitemap_include?: boolean
           slug: string
           status?: string
           title: string
+          twitter_description?: string | null
+          twitter_image?: string | null
+          twitter_title?: string | null
           updated_at?: string
           view_count?: number
         }
         Update: {
           author_id?: string | null
+          canonical_url?: string | null
           category_id?: string | null
           content?: Json | null
           content_html?: string | null
-          cover_image?: string | null
           cover_focal?: string | null
+          cover_image?: string | null
           cover_ratio?: string | null
           cover_size?: string | null
           created_at?: string
           excerpt?: string | null
           focus_keyword?: string | null
           id?: string
+          is_pillar?: boolean
           meta_description?: string | null
           meta_title?: string | null
+          og_description?: string | null
           og_image?: string | null
+          og_title?: string | null
           published_at?: string | null
           reading_time?: number | null
+          robots?: string[] | null
+          schema_data?: Json
+          schema_type?: string | null
+          secondary_keywords?: string[] | null
+          seo_score?: number | null
+          sitemap_include?: boolean
           slug?: string
           status?: string
           title?: string
+          twitter_description?: string | null
+          twitter_image?: string | null
+          twitter_title?: string | null
           updated_at?: string
           view_count?: number
         }
@@ -587,6 +491,69 @@ export type Database = {
         }
         Relationships: []
       }
+      page_seo: {
+        Row: {
+          canonical: string | null
+          created_at: string
+          description: string | null
+          label: string
+          og_description: string | null
+          og_image: string | null
+          og_title: string | null
+          path: string
+          robots: string[] | null
+          schema_type: string
+          sitemap_changefreq: string
+          sitemap_include: boolean
+          sitemap_priority: number
+          title: string | null
+          twitter_description: string | null
+          twitter_image: string | null
+          twitter_title: string | null
+          updated_at: string
+        }
+        Insert: {
+          canonical?: string | null
+          created_at?: string
+          description?: string | null
+          label?: string
+          og_description?: string | null
+          og_image?: string | null
+          og_title?: string | null
+          path: string
+          robots?: string[] | null
+          schema_type?: string
+          sitemap_changefreq?: string
+          sitemap_include?: boolean
+          sitemap_priority?: number
+          title?: string | null
+          twitter_description?: string | null
+          twitter_image?: string | null
+          twitter_title?: string | null
+          updated_at?: string
+        }
+        Update: {
+          canonical?: string | null
+          created_at?: string
+          description?: string | null
+          label?: string
+          og_description?: string | null
+          og_image?: string | null
+          og_title?: string | null
+          path?: string
+          robots?: string[] | null
+          schema_type?: string
+          sitemap_changefreq?: string
+          sitemap_include?: boolean
+          sitemap_priority?: number
+          title?: string | null
+          twitter_description?: string | null
+          twitter_image?: string | null
+          twitter_title?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       penerima: {
         Row: {
           alamat: string | null
@@ -698,6 +665,150 @@ export type Database = {
         }
         Relationships: []
       }
+      programs: {
+        Row: {
+          alt: string
+          category: string
+          created_at: string
+          days_left: number | null
+          description: string
+          donasi_url: string
+          donatur_count: number | null
+          id: string
+          image: string
+          is_published: boolean
+          last_synced_at: string | null
+          progress_pct: number | null
+          raised_amount: number | null
+          slug: string
+          sort_order: number
+          tag: string
+          target_amount: number | null
+          title: string
+          updated_at: string
+          wp_campaign_id: number | null
+        }
+        Insert: {
+          alt?: string
+          category: string
+          created_at?: string
+          days_left?: number | null
+          description: string
+          donasi_url: string
+          donatur_count?: number | null
+          id?: string
+          image: string
+          is_published?: boolean
+          last_synced_at?: string | null
+          progress_pct?: number | null
+          raised_amount?: number | null
+          slug: string
+          sort_order?: number
+          tag?: string
+          target_amount?: number | null
+          title: string
+          updated_at?: string
+          wp_campaign_id?: number | null
+        }
+        Update: {
+          alt?: string
+          category?: string
+          created_at?: string
+          days_left?: number | null
+          description?: string
+          donasi_url?: string
+          donatur_count?: number | null
+          id?: string
+          image?: string
+          is_published?: boolean
+          last_synced_at?: string | null
+          progress_pct?: number | null
+          raised_amount?: number | null
+          slug?: string
+          sort_order?: number
+          tag?: string
+          target_amount?: number | null
+          title?: string
+          updated_at?: string
+          wp_campaign_id?: number | null
+        }
+        Relationships: []
+      }
+      redirection_404_log: {
+        Row: {
+          created_at: string
+          hits: number
+          id: string
+          last_hit_at: string
+          referer: string
+          uri: string
+          user_agent: string
+        }
+        Insert: {
+          created_at?: string
+          hits?: number
+          id?: string
+          last_hit_at?: string
+          referer?: string
+          uri: string
+          user_agent?: string
+        }
+        Update: {
+          created_at?: string
+          hits?: number
+          id?: string
+          last_hit_at?: string
+          referer?: string
+          uri?: string
+          user_agent?: string
+        }
+        Relationships: []
+      }
+      redirections: {
+        Row: {
+          comparison: string
+          created_at: string
+          destination: string
+          hits: number
+          http_code: number
+          id: string
+          ignore_case: boolean
+          is_active: boolean
+          last_hit_at: string | null
+          note: string
+          sources: string[]
+          updated_at: string
+        }
+        Insert: {
+          comparison?: string
+          created_at?: string
+          destination?: string
+          hits?: number
+          http_code?: number
+          id?: string
+          ignore_case?: boolean
+          is_active?: boolean
+          last_hit_at?: string | null
+          note?: string
+          sources: string[]
+          updated_at?: string
+        }
+        Update: {
+          comparison?: string
+          created_at?: string
+          destination?: string
+          hits?: number
+          http_code?: number
+          id?: string
+          ignore_case?: boolean
+          is_active?: boolean
+          last_hit_at?: string | null
+          note?: string
+          sources?: string[]
+          updated_at?: string
+        }
+        Relationships: []
+      }
       rekening: {
         Row: {
           account_holder: string
@@ -734,14 +845,14 @@ export type Database = {
         }
         Relationships: []
       }
-      settings: {
+      seo_settings: {
         Row: {
           key: string
           updated_at: string
           value: Json
         }
         Insert: {
-          key: string
+          key?: string
           updated_at?: string
           value?: Json
         }
@@ -752,14 +863,14 @@ export type Database = {
         }
         Relationships: []
       }
-      seo_settings: {
+      settings: {
         Row: {
           key: string
           updated_at: string
           value: Json
         }
         Insert: {
-          key?: string
+          key: string
           updated_at?: string
           value?: Json
         }
@@ -899,7 +1010,73 @@ export type Database = {
         }
         Relationships: []
       }
+      trust_logos: {
+        Row: {
+          created_at: string
+          id: string
+          is_published: boolean
+          name: string
+          sort_order: number
+          src: string
+          updated_at: string
+          url: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_published?: boolean
+          name: string
+          sort_order?: number
+          src: string
+          updated_at?: string
+          url?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_published?: boolean
+          name?: string
+          sort_order?: number
+          src?: string
+          updated_at?: string
+          url?: string
+        }
+        Relationships: []
+      }
       values_list: {
+        Row: {
+          created_at: string
+          descr: string
+          id: string
+          is_published: boolean
+          n: string
+          sort_order: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          descr: string
+          id?: string
+          is_published?: boolean
+          n: string
+          sort_order?: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          descr?: string
+          id?: string
+          is_published?: boolean
+          n?: string
+          sort_order?: number
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      why_us: {
         Row: {
           created_at: string
           descr: string
@@ -937,12 +1114,18 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      bump_redirect_hit: { Args: { p_id: string }; Returns: undefined }
       get_user_role: { Args: never; Returns: string }
       heartbeat: { Args: never; Returns: string }
       increment_view: { Args: { p_slug: string }; Returns: undefined }
       is_admin: { Args: never; Returns: boolean }
       is_editor: { Args: never; Returns: boolean }
+      is_super_admin: { Args: never; Returns: boolean }
       last_heartbeat: { Args: never; Returns: string }
+      log_404: {
+        Args: { p_referer?: string; p_uri: string; p_user_agent?: string }
+        Returns: undefined
+      }
       prune_heartbeats: { Args: { p_days?: number }; Returns: number }
       record_activity: {
         Args: {
@@ -953,6 +1136,10 @@ export type Database = {
           p_summary?: string
         }
         Returns: string
+      }
+      sync_article_tags: {
+        Args: { p_article_id: string; p_tag_ids: string[] }
+        Returns: undefined
       }
     }
     Enums: {

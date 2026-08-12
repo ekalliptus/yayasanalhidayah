@@ -1,6 +1,10 @@
 ---
 import '../styles/global.css';
-import { getSeoSettings, buildTitle } from '../lib/seo';
+import SeoHead from '../components/SeoHead.astro';
+import {
+  getSeoSettings, getPageSeo, resolveSeo, buildSchemaGraph,
+  type SeoKind, type RobotsToken, type BreadcrumbItem,
+} from '@/lib/seo';
 
 interface Props {
   title: string;
@@ -8,83 +12,96 @@ interface Props {
   noindex?: boolean;
   canonical?: string;
   ogImage?: string;
-  rawTitle?: boolean; // skip the global separator (article pages pass a fully-formed title)
+  /** Skip the title template (page passes a fully-formed title). */
+  rawTitle?: boolean;
+  kind?: SeoKind;
+  /** Per-article SEO, forwarded straight from the CMS row. */
+  robots?: RobotsToken[] | null;
+  ogTitle?: string | null;
+  ogDescription?: string | null;
+  twitterTitle?: string | null;
+  twitterDescription?: string | null;
+  twitterImage?: string | null;
+  schemaType?: string | null;
+  breadcrumbs?: BreadcrumbItem[];
+  article?: {
+    title: string;
+    schemaData?: Record<string, unknown>;
+    image?: string;
+    publishedAt?: string | null;
+    modifiedAt?: string | null;
+    authorName?: string;
+    section?: string;
+    keywords?: string[];
+    wordCount?: number;
+    excerpt?: string;
+    focusKeyword?: string;
+  };
+  page?: number;
 }
 
-const { title, description, noindex = false, canonical, ogImage, rawTitle = false } = Astro.props;
-// Pull Rank-Math-style global SEO settings from the CMS (gracefully returns
-// defaults when Supabase is unreachable, e.g. build-time prerender of /404).
-const seo = await getSeoSettings(Astro.locals?.supabase ?? null);
-const resolvedTitle = rawTitle ? title : buildTitle(title, seo);
-const resolvedDescription = description || seo.homepage_description || 'Yayasan Alhidayah — Lembaga sosial & keagamaan dari Bandung Barat. Wakaf mushaf Al-Quran, kafarat, dan bantuan sosial untuk fakir miskin, anak yatim, dan penggiat dakwah.';
-const canonicalUrl = canonical || new URL(Astro.url.pathname, 'https://yayasanalhidayah.com').href;
-const ogImageUrl = ogImage || seo.default_og_image || 'https://yayasanalhidayah.com/hero/hero-1.webp';
-const ga4Id = seo.ga4_id?.trim() || '';
-const gsc = seo.gsc_verification?.trim() || '';
-const bing = seo.bing_verification?.trim() || '';
-const robotsContent = (noindex || !seo.robots_index) ? 'noindex, nofollow' : 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1';
+const {
+  title, description, noindex = false, canonical, ogImage, rawTitle = false,
+  kind, robots = null, ogTitle = null, ogDescription = null,
+  twitterTitle = null, twitterDescription = null, twitterImage = null,
+  schemaType = null, breadcrumbs = [], article, page = 1,
+} = Astro.props;
 
-const jsonLd = {
-  "@context": "https://schema.org",
-  "@graph": [
-    {
-      "@type": ["Organization", "NGO"],
-      "@id": "https://yayasanalhidayah.com/#organization",
-      "name": "Yayasan Alhidayah",
-      "alternateName": "Alhidayah Foundation",
-      "url": "https://yayasanalhidayah.com",
-      "logo": "https://yayasanalhidayah.com/logo-clear.png",
-      "description": "Lembaga sosial dan keagamaan berbadan hukum dari Bandung Barat yang bergerak di bidang wakaf mushaf Al-Quran, kafarat, dan bantuan sosial.",
-      "foundingDate": "2025",
-      "legalName": "Yayasan Alhidayah",
-      "taxID": "31.714.301.4-421.000",
-      "address": {
-        "@type": "PostalAddress",
-        "streetAddress": "Kampung Pamokokolan RT 03/01, Desa Bunijaya",
-        "addressLocality": "Gununghalu",
-        "addressRegion": "Kabupaten Bandung Barat",
-        "addressCountry": "ID"
-      },
-      "geo": {
-        "@type": "GeoCoordinates",
-        "latitude": -6.89,
-        "longitude": 107.34
-      },
-      "contactPoint": {
-        "@type": "ContactPoint",
-        "telephone": "+62-851-7700-7772",
-        "contactType": "customer service",
-        "availableLanguage": "Indonesian"
-      },
-      "sameAs": [
-        "https://www.instagram.com/@aksibaikalhidayah",
-        "https://www.facebook.com/Yas%20Alhidayah"
-      ],
-      "areaServed": {
-        "@type": "AdministrativeArea",
-        "name": "Kabupaten Bandung Barat, Jawa Barat, Indonesia"
-      }
-    },
-    {
-      "@type": "WebSite",
-      "@id": "https://yayasanalhidayah.com/#website",
-      "url": "https://yayasanalhidayah.com",
-      "name": "Yayasan Alhidayah",
-      "publisher": { "@id": "https://yayasanalhidayah.com/#organization" },
-      "inLanguage": "id-ID"
-    },
-    {
-      "@type": "WebPage",
-      "@id": canonicalUrl,
-      "url": canonicalUrl,
-      "name": title,
-      "description": description,
-      "isPartOf": { "@id": "https://yayasanalhidayah.com/#website" },
-      "about": { "@id": "https://yayasanalhidayah.com/#organization" },
-      "inLanguage": "id-ID"
-    }
-  ]
-};
+const client = Astro.locals?.supabase ?? null;
+const pathname = Astro.url.pathname;
+// Global settings + any per-path override the admin configured. Both are
+// cached per-isolate for a minute, so this is not a per-request DB round trip.
+const [settings, pageOverride] = await Promise.all([
+  getSeoSettings(client),
+  getPageSeo(client, pathname),
+]);
+
+const resolvedKind: SeoKind = kind ?? (pathname === '/' ? 'home' : 'page');
+// A row for `/artikel` must not overwrite category/tag/search archive metadata,
+// because those query variants have distinct canonical URLs and titles.
+const effectivePageOverride = resolvedKind === 'archive' && Astro.url.search ? null : pageOverride;
+
+const seo = resolveSeo(
+  {
+    kind: resolvedKind,
+    pathname,
+    title,
+    description,
+    rawTitle,
+    noindex,
+    canonical,
+    ogImage,
+    robots,
+    ogTitle,
+    ogDescription,
+    twitterTitle,
+    twitterDescription,
+    twitterImage,
+    excerpt: article?.excerpt,
+    authorName: article?.authorName,
+    publishedAt: article?.publishedAt,
+    modifiedAt: article?.modifiedAt,
+    category: article?.section,
+    tags: article?.keywords,
+    focusKeyword: article?.focusKeyword,
+    page,
+  },
+  settings,
+  effectivePageOverride,
+);
+
+const jsonLd = buildSchemaGraph(
+  {
+    kind: resolvedKind,
+    seo,
+    schemaType: schemaType ?? effectivePageOverride?.schema_type ?? null,
+    breadcrumbs: settings.breadcrumbs_enabled ? breadcrumbs : [],
+    article,
+    faqs: schemaType === 'FAQPage' && article?.schemaData && Array.isArray(article.schemaData.faqs) ? article.schemaData.faqs as { question: string; answer: string }[] : undefined,
+    howTo: schemaType === 'HowTo' && article?.schemaData && Array.isArray(article.schemaData.steps) ? { name: String(article.schemaData.name || article.title), steps: article.schemaData.steps.filter((step): step is string => typeof step === 'string') } : undefined,
+  },
+  settings,
+);
 ---
 
 <!doctype html>
@@ -98,55 +115,24 @@ const jsonLd = {
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="dns-prefetch" href="https://wa.me" />
-  <title>{resolvedTitle}</title>
-  <meta name="description" content={resolvedDescription} />
 
-  {/* Search-engine verification (Rank Math SEO settings). */}
-  {gsc && <meta name="google-site-verification" content={gsc} />}
-  {bing && <meta name="msvalidate.01" content={bing} />}
-
-  <!-- SEO -->
-  <meta name="robots" content={robotsContent} />
-  <link rel="canonical" href={canonicalUrl} />
-  <link rel="alternate" hreflang="id" href={canonicalUrl} />
-  <link rel="alternate" hreflang="x-default" href={canonicalUrl} />
-
-  <!-- GEO targeting -->
-  <meta name="geo.region" content="ID-JB" />
-  <meta name="geo.placename" content="Kabupaten Bandung Barat" />
-  <meta name="geo.position" content="-6.89;107.34" />
-  <meta name="ICBM" content="-6.89, 107.34" />
-
-  <!-- Open Graph -->
-  <meta property="og:title" content={resolvedTitle} />
-  <meta property="og:description" content={resolvedDescription} />
-  <meta property="og:type" content="website" />
-  <meta property="og:url" content={canonicalUrl} />
-  <meta property="og:locale" content="id_ID" />
-  <meta property="og:site_name" content="Yayasan Alhidayah" />
-  {/* No og:image:width/height — the URL is CMS-overridable, so hardcoded
-      dimensions would lie for any custom image. Crawlers fetch and measure. */}
-  <meta property="og:image" content={ogImageUrl} />
-  <meta property="og:image:alt" content="Kegiatan Yayasan Alhidayah — Wakaf & Kafarat" />
-
-  <!-- Twitter -->
-  <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content={resolvedTitle} />
-  <meta name="twitter:description" content={resolvedDescription} />
-  <meta name="twitter:image" content={ogImageUrl} />
-
-  {/* Google Analytics 4 (Rank Math SEO settings) — only when a Measurement ID is set. */}
-  {ga4Id && <script is:inline async src={`https://www.googletagmanager.com/gtag/js?id=${ga4Id}`}></script>}
-  {ga4Id && (
-    <script is:inline set:html={`window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','${ga4Id}');`} />
-  )}
-
-  <!-- Structured Data -->
-  <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+  <SeoHead
+    seo={seo}
+    settings={settings}
+    jsonLd={jsonLd}
+    article={article && {
+      publishedAt: article.publishedAt,
+      modifiedAt: article.modifiedAt,
+      section: article.section,
+      tags: article.keywords,
+      authorName: article.authorName,
+    }}
+  />
 
   <link rel="icon" href="/favicon.ico" sizes="32x32" />
   <link rel="icon" href="/logo.webp" type="image/webp" />
   <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <link rel="alternate" type="application/rss+xml" title="Artikel Yayasan Alhidayah" href="/rss.xml" />
 
   <!-- Fonts — single combined request, async loaded -->
   <link
@@ -166,6 +152,9 @@ const jsonLd = {
   </script>
 </head>
 <body>
+  {settings.gtm_id && (
+    <noscript><iframe src={`https://www.googletagmanager.com/ns.html?id=${settings.gtm_id}`} height="0" width="0" style="display:none;visibility:hidden" title="Google Tag Manager"></iframe></noscript>
+  )}
   <slot />
 
   <script is:inline>

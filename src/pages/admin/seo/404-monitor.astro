@@ -1,0 +1,8 @@
+---
+export const prerender = false;
+import AdminLayout from '@/layouts/AdminLayout.astro';
+import Monitor404, { type Log404 } from '@/components/admin/seo/Monitor404';
+const { data } = await (Astro.locals.supabase as any).from('redirection_404_log').select('*').order('hits', { ascending: false }).limit(500);
+const rows = (data ?? []) as unknown as Log404[];
+---
+<AdminLayout title="404 Monitor"><Monitor404 client:load initial={rows} /></AdminLayout>

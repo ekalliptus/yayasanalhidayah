@@ -1,0 +1,8 @@
+---
+export const prerender = false;
+import AdminLayout from '@/layouts/AdminLayout.astro';
+import RedirectionsManager, { type RedirectRow } from '@/components/admin/seo/RedirectionsManager';
+const { data } = await (Astro.locals.supabase as any).from('redirections').select('*').order('updated_at', { ascending: false });
+const rows = (data ?? []) as unknown as RedirectRow[];
+---
+<AdminLayout title="Redirections"><RedirectionsManager client:load initial={rows} /></AdminLayout>

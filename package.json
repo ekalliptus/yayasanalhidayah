@@ -7,13 +7,14 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "check": "astro check"
+    "check": "astro check",
+    "test:seo": "bun test src/lib/seo/seo.test.ts src/components/admin/articles/seo-checks.test.ts",
+    "smoke:seo": "bun scripts/verify-seo.mjs"
   },
   "dependencies": {
     "@astrojs/cloudflare": "^13.5.0",
     "@astrojs/react": "^5.0.5",
     "@astrojs/rss": "^4.0.18",
-    "@astrojs/sitemap": "^3.3.1",
     "@base-ui/react": "^1.4.1",
     "@hookform/resolvers": "^5.4.0",
     "@supabase/ssr": "^0.12.0",

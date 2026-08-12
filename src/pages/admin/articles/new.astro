@@ -2,12 +2,16 @@
 export const prerender = false;
 import AdminLayout from '@/layouts/AdminLayout.astro';
 import ArticleForm, { type ArticleInitial } from '@/components/admin/articles/ArticleForm';
+import { getSeoSettings } from '@/lib/seo';
 
 const supabase = Astro.locals.supabase;
-const [{ data: categories }, { data: tags }] = await Promise.all([
+const [{ data: categories }, { data: tags }, { data: keywords }, seoSettings] = await Promise.all([
   supabase.from('categories').select('*').order('name'),
   supabase.from('tags').select('*').order('name'),
+  supabase.from('articles').select('focus_keyword').not('focus_keyword', 'is', null),
+  getSeoSettings(supabase),
 ]);
+const usedFocusKeywords = ((keywords ?? []) as { focus_keyword: string | null }[]).map((r) => r.focus_keyword).filter(Boolean) as string[];
 
 const initial: ArticleInitial = {
   id: null,
@@ -24,11 +28,13 @@ const initial: ArticleInitial = {
   category_id: null,
   meta_title: '',
   meta_description: '',
-  focus_keyword: '',
-  og_image: '',
+  focus_keyword: '', secondary_keywords: [], canonical_url: '', robots: null,
+  og_title: '', og_description: '', og_image: '',
+  twitter_title: '', twitter_description: '', twitter_image: '',
+  schema_type: 'BlogPosting', schema_data: {}, is_pillar: false, sitemap_include: true, seo_score: null,
   tag_ids: [],
 };
 ---
 <AdminLayout title="Artikel Baru">
-  <ArticleForm client:load initial={initial} categories={categories ?? []} tags={tags ?? []} />
+  <ArticleForm client:load initial={initial} categories={categories ?? []} tags={tags ?? []} seoSettings={seoSettings} usedFocusKeywords={usedFocusKeywords} />
 </AdminLayout>

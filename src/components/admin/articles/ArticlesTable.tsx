@@ -24,6 +24,7 @@ export interface ArticleRow {
   published_at: string | null;
   view_count: number;
   updated_at: string;
+  seo_score: number | null;
 }
 
 const statusTone: Record<ArticleStatus, string> = {
@@ -80,6 +81,7 @@ export default function ArticlesTable({ initial }: { initial: ArticleRow[] }) {
             <TableRow>
               <TableHead>Judul</TableHead>
               <TableHead className="w-28">Status</TableHead>
+              <TableHead className="w-20 text-right">SEO</TableHead>
               <TableHead className="w-20 text-right">Dilihat</TableHead>
               <TableHead className="w-44">Diperbarui</TableHead>
               <TableHead className="w-24 text-right">Aksi</TableHead>
@@ -88,7 +90,7 @@ export default function ArticlesTable({ initial }: { initial: ArticleRow[] }) {
           <TableBody>
             {filtered.length === 0 && (
               <TableRow>
-                <TableCell colSpan={5} className="py-10 text-center text-muted-foreground">
+                <TableCell colSpan={6} className="py-10 text-center text-muted-foreground">
                   {rows.length === 0 ? 'Belum ada artikel. Buat yang pertama!' : 'Tidak ada hasil.'}
                 </TableCell>
               </TableRow>
@@ -102,6 +104,7 @@ export default function ArticlesTable({ initial }: { initial: ArticleRow[] }) {
                 <TableCell>
                   <Badge variant="outline" className={statusTone[r.status as ArticleStatus] ?? ''}>{statusLabel[r.status as ArticleStatus] ?? r.status}</Badge>
                 </TableCell>
+                <TableCell className={`text-right font-medium tabular-nums ${(r.seo_score ?? 0) >= 71 ? 'text-emerald-400' : (r.seo_score ?? 0) >= 41 ? 'text-amber-400' : 'text-red-400'}`}>{r.seo_score ?? '—'}</TableCell>
                 <TableCell className="text-right tabular-nums">{r.view_count}</TableCell>
                 <TableCell className="text-sm text-muted-foreground">{absoluteTime(r.updated_at)}</TableCell>
                 <TableCell>

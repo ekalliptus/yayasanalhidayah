@@ -29,7 +29,7 @@ export interface ArticleCard {
 
 export async function listPublishedArticles(
   client: DB,
-  { page = 1, perPage = 9, categorySlug }: { page?: number; perPage?: number; categorySlug?: string } = {},
+  { page = 1, perPage = 9, categorySlug, tagSlug, search }: { page?: number; perPage?: number; categorySlug?: string; tagSlug?: string; search?: string } = {},
 ): Promise<ArticleListResult> {
   const from = (page - 1) * perPage;
   const to = from + perPage - 1;
@@ -40,7 +40,28 @@ export async function listPublishedArticles(
     .lte('published_at', nowIso())
     .order('published_at', { ascending: false })
     .range(from, to);
-  if (categorySlug) query = query.eq('category.slug', categorySlug);
+  if (search?.trim()) {
+    // Literal title search; escape PostgREST wildcard characters so user input
+    // cannot silently broaden itself into an unbounded pattern.
+    const term = search.trim().slice(0, 100).replace(/[\\%_]/g, (m) => `\\${m}`);
+    query = query.ilike('title', `%${term}%`);
+  }
+  if (categorySlug) {
+    const { data: category } = await client.from('categories').select('id').eq('slug', categorySlug).maybeSingle<{ id: string }>();
+    if (!category) return { articles: [], total: 0, totalPages: 1, page };
+    query = query.eq('category_id', category.id);
+  }
+  if (tagSlug) {
+    // Supabase cannot reliably filter the card's nested M2M relation while
+    // retaining a flat count. Resolve matching article IDs first; archives are
+    // small and indexed by article_tags(tag_id).
+    const { data: tag } = await client.from('tags').select('id').eq('slug', tagSlug).maybeSingle<{ id: string }>();
+    if (!tag) return { articles: [], total: 0, totalPages: 1, page };
+    const { data: links } = await client.from('article_tags').select('article_id').eq('tag_id', tag.id);
+    const ids = (links ?? []).map((row) => row.article_id);
+    if (!ids.length) return { articles: [], total: 0, totalPages: 1, page };
+    query = query.in('id', ids);
+  }
 
   const { data, count, error } = await query;
   if (error) throw new Error(error.message);

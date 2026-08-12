@@ -34,6 +34,8 @@ export interface SeoInput {
   text: string; // plain text from editor
   html: string; // HTML from editor
   hasCover: boolean;
+  /** Focus keywords used by other articles; lowercase comparison. */
+  usedFocusKeywords?: string[];
 }
 
 function lower(s: string): string {
@@ -78,20 +80,34 @@ function countImages(html: string): number {
   return (html.match(/<img\s/gi) || []).length;
 }
 
+function imagesMissingAlt(html: string): number {
+  const images = html.match(/<img\b[^>]*>/gi) || [];
+  return images.filter((img) => !/\balt=["'][^"']+["']/i.test(img)).length;
+}
+
+function headingLevels(html: string): number[] {
+  return [...html.matchAll(/<h([2-6])\b/gi)].map((m) => Number(m[1]));
+}
+
+function keywordDistribution(text: string, keyword: string): number {
+  if (!keyword || !text) return 0;
+  const sections = [text.slice(0, text.length / 3), text.slice(text.length / 3, 2 * text.length / 3), text.slice(2 * text.length / 3)];
+  return sections.filter((section) => containsKeyword(section, keyword)).length;
+}
+
+const POWER_WORDS = /\b(panduan|lengkap|terbaik|mudah|praktis|penting|rahasia|ampuh|gratis|wajib|cara|solusi|manfaat)\b/i;
+const TRANSITIONS = /\b(karena itu|oleh karena itu|selain itu|namun|meskipun|kemudian|selanjutnya|sementara itu|dengan demikian|sebaliknya)\b/gi;
+
+function linkHrefs(html: string): string[] {
+  return [...html.matchAll(/<a\s[^>]*href=["']([^"']*)["'][^>]*>/gi)].map((match) => match[1]);
+}
+
 function hasInternalLinks(html: string): boolean {
-  const links = html.match(/<a\s[^>]*href="([^"]*)"[^>]*>/gi) || [];
-  return links.some((l) => {
-    const href = l.match(/href="([^"]*)"/)?.[1] || '';
-    return href.startsWith('/') || href.includes('yayasanalhidayah.com');
-  });
+  return linkHrefs(html).some((href) => href.startsWith('/') || href.includes('yayasanalhidayah.com'));
 }
 
 function hasExternalLinks(html: string): boolean {
-  const links = html.match(/<a\s[^>]*href="([^"]*)"[^>]*>/gi) || [];
-  return links.some((l) => {
-    const href = l.match(/href="([^"]*)"/)?.[1] || '';
-    return href.startsWith('http') && !href.includes('yayasanalhidayah.com');
-  });
+  return linkHrefs(html).some((href) => href.startsWith('http') && !href.includes('yayasanalhidayah.com'));
 }
 
 function avgSentenceLength(text: string): number {
@@ -102,14 +118,14 @@ function avgSentenceLength(text: string): number {
 }
 
 function avgParagraphLength(text: string): number {
-  const paragraphs = text.split(/\n\s*\n/).filter((p) => p.trim().length > 0);
+  const paragraphs = text.split(/\n+/).filter((p) => p.trim().length > 0);
   if (paragraphs.length === 0) return 0;
   const total = paragraphs.reduce((sum, p) => sum + wordCount(p), 0);
   return total / paragraphs.length;
 }
 
 function paragraphCount(text: string): number {
-  return text.split(/\n\s*\n/).filter((p) => p.trim().length > 0).length;
+  return text.split(/\n+/).filter((p) => p.trim().length > 0).length;
 }
 
 // ── Checks ──────────────────────────────────────────────────────────────────
@@ -126,6 +142,20 @@ function basicChecks(input: SeoInput): SeoCheck[] {
       weight: 3,
       status: kw ? 'pass' : 'fail',
       message: kw ? `Focus keyword: "${kw}"` : 'Tentukan focus keyword untuk artikel ini',
+    },
+    {
+      id: 'kw-title-start',
+      label: 'Keyword di awal judul',
+      weight: 2,
+      status: !kw ? 'fail' : lower(input.title).startsWith(lower(kw)) ? 'pass' : containsKeyword(input.title, kw) ? 'warning' : 'fail',
+      message: !kw ? 'Isi focus keyword terlebih dahulu' : lower(input.title).startsWith(lower(kw)) ? 'Judul diawali focus keyword' : `Letakkan "${kw}" sedekat mungkin ke awal judul`,
+    },
+    {
+      id: 'kw-unique',
+      label: 'Keyword unik',
+      weight: 2,
+      status: !kw ? 'fail' : (input.usedFocusKeywords ?? []).map(lower).includes(lower(kw)) ? 'warning' : 'pass',
+      message: !kw ? 'Isi focus keyword terlebih dahulu' : (input.usedFocusKeywords ?? []).map(lower).includes(lower(kw)) ? 'Focus keyword sudah dipakai artikel lain' : 'Focus keyword belum dipakai artikel lain',
     },
     {
       id: 'kw-in-title',
@@ -270,6 +300,27 @@ function contentChecks(input: SeoInput): SeoCheck[] {
         ? 'Ada link ke sumber eksternal'
         : 'Pertimbangkan menambahkan referensi ke sumber terpercaya',
     },
+    {
+      id: 'content-depth',
+      label: 'Kedalaman konten',
+      weight: 2,
+      status: words >= 1200 ? 'pass' : words >= 600 ? 'warning' : 'fail',
+      message: words >= 1200 ? `${words} kata — pembahasan mendalam` : `Tambahkan pembahasan hingga sekitar 1.200 kata bila topik membutuhkan`,
+    },
+    {
+      id: 'keyword-distribution',
+      label: 'Distribusi keyword',
+      weight: 2,
+      status: !kw ? 'fail' : keywordDistribution(input.text, kw) >= 2 ? 'pass' : 'warning',
+      message: !kw ? 'Isi focus keyword terlebih dahulu' : keywordDistribution(input.text, kw) >= 2 ? 'Keyword tersebar di beberapa bagian konten' : 'Sebarkan keyword secara alami dari awal hingga akhir',
+    },
+    {
+      id: 'has-toc',
+      label: 'Daftar isi',
+      weight: 1,
+      status: words < 800 || /href=["']#[^"']+["']/i.test(input.html) ? 'pass' : 'warning',
+      message: words < 800 ? 'Konten belum membutuhkan daftar isi' : /href=["']#[^"']+["']/i.test(input.html) ? 'Daftar isi terdeteksi' : 'Pertimbangkan daftar isi untuk konten panjang',
+    },
   ];
 }
 
@@ -356,6 +407,9 @@ function titleMetaChecks(input: SeoInput): SeoCheck[] {
 
 function mediaChecks(input: SeoInput): SeoCheck[] {
   const images = countImages(input.html);
+  const missingAlt = imagesMissingAlt(input.html);
+  const levels = headingLevels(input.html);
+  const headingOrderValid = levels.every((level, i) => i === 0 || level <= levels[i - 1] + 1);
 
   return [
     {
@@ -394,12 +448,29 @@ function mediaChecks(input: SeoInput): SeoCheck[] {
           ? 'Slug valid (huruf kecil, angka, strip)'
           : 'Slug mengandung karakter tidak standar',
     },
+    {
+      id: 'image-alt',
+      label: 'Alt text gambar',
+      weight: 2,
+      status: images === 0 ? 'warning' : missingAlt === 0 ? 'pass' : 'warning',
+      message: images === 0 ? 'Belum ada gambar konten' : missingAlt === 0 ? 'Semua gambar memiliki alt text' : `${missingAlt} gambar belum memiliki alt text`,
+    },
+    {
+      id: 'heading-order',
+      label: 'Urutan heading',
+      weight: 1,
+      status: levels.length === 0 ? 'warning' : headingOrderValid ? 'pass' : 'warning',
+      message: levels.length === 0 ? 'Belum ada heading' : headingOrderValid ? 'Hierarki heading berurutan' : 'Jangan melompati tingkat heading (mis. H2 langsung H4)',
+    },
   ];
 }
 
 function readabilityChecks(input: SeoInput): SeoCheck[] {
   const avgSent = avgSentenceLength(input.text);
   const paraCount = paragraphCount(input.text);
+  const words = wordCount(input.text);
+  const longWords = input.text.split(/\s+/).filter((w) => w.replace(/[^\p{L}]/gu, '').length > 12).length;
+  const transitionCount = (input.text.match(TRANSITIONS) || []).length;
 
   return [
     {
@@ -432,6 +503,34 @@ function readabilityChecks(input: SeoInput): SeoCheck[] {
       weight: 1,
       status: input.excerpt ? 'pass' : 'warning',
       message: input.excerpt ? 'Ringkasan/excerpt sudah diisi' : 'Isi ringkasan untuk preview di daftar artikel',
+    },
+    {
+      id: 'transition-words',
+      label: 'Kata transisi',
+      weight: 1,
+      status: words === 0 ? 'fail' : transitionCount >= Math.max(1, Math.floor(words / 300)) ? 'pass' : 'warning',
+      message: transitionCount > 0 ? `${transitionCount} frasa transisi ditemukan` : 'Gunakan kata transisi agar alur mudah diikuti',
+    },
+    {
+      id: 'word-complexity',
+      label: 'Kompleksitas kata',
+      weight: 1,
+      status: words === 0 ? 'fail' : (longWords / words) * 100 <= 10 ? 'pass' : 'warning',
+      message: words === 0 ? 'Belum ada konten' : `${((longWords / words) * 100).toFixed(1)}% kata sangat panjang`,
+    },
+    {
+      id: 'title-number',
+      label: 'Angka dalam judul',
+      weight: 1,
+      status: /\d/.test(input.title) ? 'pass' : 'warning',
+      message: /\d/.test(input.title) ? 'Judul memakai angka' : 'Angka bisa memperjelas judul listicle/panduan bila relevan',
+    },
+    {
+      id: 'title-power-word',
+      label: 'Power word judul',
+      weight: 1,
+      status: POWER_WORDS.test(input.title) ? 'pass' : 'warning',
+      message: POWER_WORDS.test(input.title) ? 'Judul memiliki kata yang menarik' : 'Pertimbangkan kata spesifik seperti panduan, lengkap, atau praktis',
     },
   ];
 }

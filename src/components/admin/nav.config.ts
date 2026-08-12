@@ -58,7 +58,10 @@ export const NAV_SECTIONS: NavSection[] = [
     label: 'Sistem',
     items: [
       { label: 'Pesan Masuk', href: '/admin/submissions', icon: 'inbox', adminOnly: true, disabled: true },
-      { label: 'Rank Math SEO', href: '/admin/seo', icon: 'search-check', adminOnly: true },
+      { label: 'Rank Math SEO', href: '/admin/seo', icon: 'search-check', adminOnly: true, match: 'exact' },
+      { label: 'SEO Halaman', href: '/admin/seo/pages', icon: 'file-search', adminOnly: true },
+      { label: 'Redirections', href: '/admin/seo/redirections', icon: 'route', adminOnly: true },
+      { label: '404 Monitor', href: '/admin/seo/404-monitor', icon: 'circle-alert', adminOnly: true },
       { label: 'Pengaturan', href: '/admin/settings', icon: 'settings', adminOnly: true },
       { label: 'Pengguna', href: '/admin/users', icon: 'user-cog', adminOnly: true },
     ],

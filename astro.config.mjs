@@ -1,6 +1,5 @@
 import { defineConfig } from 'astro/config';
 import { sessionDrivers } from 'astro/config';
-import sitemap from '@astrojs/sitemap';
 import react from '@astrojs/react';
 import cloudflare from '@astrojs/cloudflare';
 import tailwindcss from '@tailwindcss/vite';
@@ -33,7 +32,7 @@ export default defineConfig({
   // `vars` + secrets in both dev and prod). The v12 `platformProxy`/`workerEntryPoint`
   // options no longer exist. imageService:'compile' inlines the image service.
   adapter: cloudflare({ imageService: 'compile' }),
-  integrations: [sitemap(), react()],
+  integrations: [react()],
   // No Astro Sessions used (auth = Supabase cookies). Pin a no-op session driver
   // so the adapter stops auto-provisioning a "SESSION" KV namespace on every deploy
   // (fails with code 10014 once the namespace already exists).

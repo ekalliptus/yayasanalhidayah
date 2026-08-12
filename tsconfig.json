@@ -7,5 +7,10 @@
     },
     "jsx": "react-jsx",
     "jsxImportSource": "react"
-  }
+  },
+  // Unit tests import `bun:test`, whose types only exist inside the Bun
+  // runtime. Adding "types": ["bun"] would drop the auto-included @types/*
+  // packages the app relies on, so the tests are excluded from astro check and
+  // verified by `bun run test:seo` instead.
+  "exclude": ["dist", "node_modules", "**/*.test.ts", "**/*.test.tsx"]
 }

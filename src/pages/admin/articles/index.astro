@@ -3,9 +3,9 @@ export const prerender = false;
 import AdminLayout from '@/layouts/AdminLayout.astro';
 import ArticlesTable from '@/components/admin/articles/ArticlesTable';
 
-const { data } = await Astro.locals.supabase
+const { data } = await (Astro.locals.supabase as any)
   .from('articles')
-  .select('id,title,slug,status,published_at,view_count,updated_at')
+  .select('id,title,slug,status,published_at,view_count,updated_at,seo_score')
   .order('updated_at', { ascending: false });
 ---
 <AdminLayout title="Artikel">

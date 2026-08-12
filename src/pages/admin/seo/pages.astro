@@ -1,0 +1,8 @@
+---
+export const prerender = false;
+import AdminLayout from '@/layouts/AdminLayout.astro';
+import PageSeoManager from '@/components/admin/seo/PageSeoManager';
+import { listPageSeo } from '@/lib/seo';
+const pages = await listPageSeo(Astro.locals.supabase);
+---
+<AdminLayout title="SEO Halaman"><PageSeoManager client:load initial={pages} /></AdminLayout>

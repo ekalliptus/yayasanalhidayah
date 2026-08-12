@@ -42,6 +42,12 @@ report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 # local data snapshots (WordPress export, not source)
 campaigns/
 
+# Supabase CLI local state (link target, pooler URL, service versions)
+supabase/.temp/
+
+# vendored reference archives (source material, not source code)
+*.zip
+
 # build artifacts
 .build.log
 .gstack/

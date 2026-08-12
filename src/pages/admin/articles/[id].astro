@@ -2,16 +2,20 @@
 export const prerender = false;
 import AdminLayout from '@/layouts/AdminLayout.astro';
 import ArticleForm, { type ArticleInitial } from '@/components/admin/articles/ArticleForm';
+import { getSeoSettings } from '@/lib/seo';
 
 const { id } = Astro.params;
 const supabase = Astro.locals.supabase;
 
-const [{ data: article }, { data: categories }, { data: tags }, { data: artTags }] = await Promise.all([
+const [{ data: article }, { data: categories }, { data: tags }, { data: artTags }, { data: keywords }, seoSettings] = await Promise.all([
   supabase.from('articles').select('*').eq('id', id!).maybeSingle() as any,
   supabase.from('categories').select('*').order('name') as any,
   supabase.from('tags').select('*').order('name') as any,
   supabase.from('article_tags').select('tag_id').eq('article_id', id!) as any,
+  supabase.from('articles').select('focus_keyword').neq('id', id!).not('focus_keyword', 'is', null) as any,
+  getSeoSettings(supabase),
 ]);
+const usedFocusKeywords = ((keywords ?? []) as { focus_keyword: string | null }[]).map((r) => r.focus_keyword).filter(Boolean) as string[];
 
 if (!article) return Astro.redirect('/admin/articles');
 
@@ -31,10 +35,23 @@ const initial: ArticleInitial = {
   meta_title: article.meta_title ?? '',
   meta_description: article.meta_description ?? '',
   focus_keyword: article.focus_keyword ?? '',
+  secondary_keywords: article.secondary_keywords ?? [],
+  canonical_url: article.canonical_url ?? '',
+  robots: article.robots ?? null,
+  og_title: article.og_title ?? '',
+  og_description: article.og_description ?? '',
   og_image: article.og_image ?? '',
+  twitter_title: article.twitter_title ?? '',
+  twitter_description: article.twitter_description ?? '',
+  twitter_image: article.twitter_image ?? '',
+  schema_type: article.schema_type ?? 'BlogPosting',
+  schema_data: article.schema_data ?? {},
+  is_pillar: article.is_pillar ?? false,
+  sitemap_include: article.sitemap_include ?? true,
+  seo_score: article.seo_score ?? null,
   tag_ids: (artTags ?? []).map((t: any) => t.tag_id),
 };
 ---
 <AdminLayout title={`Edit: ${article.title}`}>
-  <ArticleForm client:load initial={initial} categories={categories ?? []} tags={tags ?? []} />
+  <ArticleForm client:load initial={initial} categories={categories ?? []} tags={tags ?? []} seoSettings={seoSettings} usedFocusKeywords={usedFocusKeywords} />
 </AdminLayout>

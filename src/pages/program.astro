@@ -4,6 +4,7 @@ import Base from '../layouts/Base.astro';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import ProgramCard from '../components/ProgramCard.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
 import { getPrograms } from '../lib/supabase/queries/marketing';
 import { programs as fallbackPrograms, donasiUrl } from '../data/programs';
 import { formatRupiahCompact } from '../lib/format';
@@ -28,8 +29,14 @@ const impactStats = [
 ];
 ---
 
-<Base title="Program Donasi — Yayasan Alhidayah" description="Daftar lengkap program donasi Yayasan Alhidayah: Kafarat, Fidyah, dan program kemanusiaan. Titipkan amanah Anda hari ini.">
+{/* Bare title — the SEO admin's page title template appends the site name. */}
+<Base
+  title="Program Donasi"
+  description="Daftar lengkap program donasi Yayasan Alhidayah: Kafarat, Fidyah, dan program kemanusiaan. Titipkan amanah Anda hari ini."
+  breadcrumbs={[{ name: 'Beranda', url: '/' }, { name: 'Program Donasi', url: '/program' }]}
+>
   <Header base="/" />
+  <Breadcrumbs items={[{ name: 'Beranda', url: '/' }, { name: 'Program Donasi', url: '/program' }]} />
 
   <section class="section-pad program-page">
     <div class="container">

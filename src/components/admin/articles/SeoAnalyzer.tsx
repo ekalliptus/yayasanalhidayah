@@ -15,7 +15,9 @@ interface Props {
   contentHtml: string;
   hasCover: boolean;
   focusKeyword: string;
+  usedFocusKeywords?: string[];
   onFocusKeywordChange: (kw: string) => void;
+  onScoreChange?: (score: number) => void;
 }
 
 const statusIcon: Record<CheckStatus, { name: string; className: string }> = {
@@ -37,13 +39,16 @@ export default function SeoAnalyzer(props: Props) {
         text: props.contentText,
         html: props.contentHtml,
         hasCover: props.hasCover,
+        usedFocusKeywords: props.usedFocusKeywords,
       }),
     [
       props.focusKeyword, props.title, props.slug, props.metaTitle,
       props.metaDesc, props.excerpt, props.contentText, props.contentHtml,
-      props.hasCover,
+      props.hasCover, props.usedFocusKeywords,
     ],
   );
+
+  React.useEffect(() => { props.onScoreChange?.(result.percentage); }, [result.percentage, props.onScoreChange]);
 
   const label = scoreLabel(result.percentage);
 

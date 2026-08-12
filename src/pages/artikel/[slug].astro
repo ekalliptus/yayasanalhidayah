@@ -4,11 +4,15 @@ import Base from '../../layouts/Base.astro';
 import Header from '../../components/Header.astro';
 import Footer from '../../components/Footer.astro';
 import BlogCard from '../../components/BlogCard.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
 import { getArticleBySlug, getRelatedArticles } from '@/lib/supabase/queries/articles';
 
 const { slug } = Astro.params;
 const article = await getArticleBySlug(Astro.locals.supabase, slug!);
-if (!article) return Astro.redirect('/404');
+if (!article) {
+  const notFound = await Astro.rewrite('/404');
+  return new Response(notFound.body, { status: 404, statusText: 'Not Found', headers: notFound.headers });
+}
 
 // Fire-and-forget view count bump.
 (Astro.locals.supabase.rpc as any)('increment_view', { p_slug: slug! }).then(() => {});
@@ -21,7 +25,16 @@ const related = await getRelatedArticles(Astro.locals.supabase, {
 const siteUrl = 'https://yayasanalhidayah.com';
 const ogImage = article.og_image || article.cover_image || `${siteUrl}/hero/hero-1.webp`;
 const metaTitle = article.meta_title || article.title;
-const metaDesc = article.meta_description || article.excerpt || '';
+// Rough word count from the stored HTML — feeds the Article schema node.
+const plainContent = (article.content_html ?? '')
+  .replace(/<script[\s\S]*?<\/script>/gi, ' ')
+  .replace(/<style[\s\S]*?<\/style>/gi, ' ')
+  .replace(/<[^>]+>/g, ' ')
+  .replace(/&(amp|lt|gt|quot|#39);/g, (entity) => ({ '&amp;': '&', '&lt;': '<', '&gt;': '>', '&quot;': '"', '&#39;': "'" }[entity] ?? entity))
+  .replace(/\s+/g, ' ')
+  .trim();
+const wordCount = plainContent ? plainContent.split(/\s+/).length : 0;
+const seoExcerpt = article.excerpt || plainContent.slice(0, 220);
 
 // Cover sizing: derive aspect-ratio + object-position from CMS fields, with
 // sensible fallbacks for articles written before the editor supported these.
@@ -46,13 +59,48 @@ function formatDate(iso: string | null): string {
 const authorName = article.author_name || 'Yayasan Alhidayah';
 const categoryName = (article as any).category?.name;
 const tags = ((article as any).article_tags ?? []).map((at: any) => at.tag);
+const tagNames = tags.filter(Boolean).map((t: any) => t.name as string);
+
+const breadcrumbs = [
+  { name: 'Beranda', url: '/' },
+  { name: 'Artikel', url: '/artikel' },
+  ...(categoryName ? [{ name: categoryName, url: `/artikel?category=${(article as any).category?.slug ?? ''}` }] : []),
+  { name: article.title, url: `/artikel/${slug}` },
+];
 ---
 
+{/* Every meta tag, OG tag and the JSON-LD @graph come from the SEO admin +
+    the per-article SEO fields — Base.astro resolves them in one place. */}
 <Base
-  title={`${metaTitle} — Yayasan Alhidayah`}
-  description={metaDesc}
+  kind="article"
+  title={metaTitle}
+  description={article.meta_description || undefined}
+  canonical={(article as any).canonical_url || undefined}
+  ogImage={ogImage}
+  robots={(article as any).robots ?? null}
+  ogTitle={(article as any).og_title ?? null}
+  ogDescription={(article as any).og_description ?? null}
+  twitterTitle={(article as any).twitter_title ?? null}
+  twitterDescription={(article as any).twitter_description ?? null}
+  twitterImage={(article as any).twitter_image ?? null}
+  schemaType={(article as any).schema_type ?? 'BlogPosting'}
+  breadcrumbs={breadcrumbs}
+  article={{
+    title: article.title,
+    schemaData: (article as any).schema_data ?? {},
+    image: ogImage,
+    publishedAt: article.published_at,
+    modifiedAt: article.updated_at,
+    authorName,
+    section: categoryName,
+    keywords: [...new Set([article.focus_keyword, ...((article as any).secondary_keywords ?? []), ...tagNames].filter(Boolean))] as string[],
+    wordCount,
+    excerpt: seoExcerpt,
+    focusKeyword: article.focus_keyword ?? '',
+  }}
 >
   <Header base="/" />
+  <Breadcrumbs items={breadcrumbs} />
   <main id="main-content">
     {/* Article header */}
     <article class="article">
@@ -112,23 +160,7 @@ const tags = ((article as any).article_tags ?? []).map((at: any) => at.tag);
       </section>
     )}
 
-    {/* JSON-LD Article schema */}
-    <script type="application/ld+json" is:inline set:html={JSON.stringify({
-      "@context": "https://schema.org",
-      "@type": "Article",
-      "headline": article.title,
-      "image": ogImage,
-      "datePublished": article.published_at,
-      "dateModified": article.updated_at,
-      "author": { "@type": "Person", "name": authorName },
-      "publisher": {
-        "@type": "Organization",
-        "name": "Yayasan Alhidayah",
-        "logo": { "@type": "ImageObject", "url": `${siteUrl}/logo-clear.png` },
-      },
-      "mainEntityOfPage": { "@type": "WebPage", "@id": `${siteUrl}/artikel/${slug}` },
-      "description": metaDesc,
-    })} />
+    {/* Article + BreadcrumbList JSON-LD is emitted by Base.astro's @graph. */}
   </main>
   <Footer base="/" />
 </Base>
