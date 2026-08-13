@@ -20,6 +20,15 @@ const kafaratTypes = [
   { id: 'dzihar', label: 'Kafarat Dzihar', per: 900_000, note: '60 fakir miskin × 1 mud (Rp15.000)' },
 ];
 
+const keutamaan = [
+  { n: '01', t: 'Menyempurnakan Ketaatan kepada Allah SWT', d: 'Menunaikan kafarat menyempurnakan ketaatan hamba kepada Rabb-nya, melengkapi ibadah setelah sebuah pelanggaran terjadi.' },
+  { n: '02', t: 'Membersihkan Diri dari Tanggungan Kewajiban', d: 'Kafarat menjadi sarana membersihkan diri dari beban tanggungan, sehingga hati kembali lapang dan bersih.' },
+  { n: '03', t: 'Menumbuhkan Rasa Tanggung Jawab', d: 'Denda atas pelanggaran menumbuhkan kesadaran dan tanggung jawab seorang muslim terhadap setiap perbuatan dan ucapannya.' },
+  { n: '04', t: 'Mendatangkan Ketenangan Hati', d: 'Menunaikan kewajiban yang tertunda mendatangkan ketenangan jiwa dan kelegaan batin yang sejati.' },
+  { n: '05', t: 'Menghadirkan Manfaat yang Berkelanjutan', d: 'Sebagian kafarat disalurkan kepada fakir miskin, sehingga kebaikan tersebut terus mengalir dan berdampak.' },
+  { n: '06', t: 'Membantu Fakir Miskin dan Mereka yang Membutuhkan', d: 'Penyaluran kafarat langsung menjangkau saudara yang membutuhkan, meringankan beban kehidupan mereka.' },
+];
+
 const perlu = [
   'Melanggar sumpah atas nama Allah',
   "Melakukan jima' di siang hari Ramadan",
@@ -110,7 +119,8 @@ const description = 'Masih memiliki kewajiban kafarat? Pelajari, hitung dengan k
       <div class="container kf-narrow">
         <div class="eyebrow"><span class="section-num">01 / Definisi</span></div>
         <h2 class="kf-h2">Apa Itu Kafarat?</h2>
-        <p class="lede" style="margin-top:16px;">Kafarat adalah kewajiban yang ditunaikan seorang muslim sebagai bentuk penyelesaian atas pelanggaran tertentu sesuai syariat Islam.</p>
+        <p class="lede" style="margin-top:16px;">Kafarat berasal dari bahasa Arab, yaitu <em>kafara</em> (كَفَرَ) yang berarti menutupi atau menghapus. Dalam syariat Islam, kafarat adalah denda atau tebusan yang wajib ditunaikan oleh seorang Muslim akibat pelanggaran tertentu, seperti melanggar sumpah, zihar, ila', atau berhubungan suami istri di siang hari Ramadan.</p>
+        <p class="kf-body">Kafarat ditunaikan sebagai bentuk tanggung jawab atas kesalahan yang telah dilakukan sekaligus sebagai upaya memenuhi ketentuan yang telah ditetapkan Allah SWT. Selain menjadi bentuk ketaatan kepada Allah, kafarat juga menghadirkan manfaat bagi sesama karena sebagian jenis kafarat disalurkan kepada fakir miskin dan mereka yang membutuhkan.</p>
         <blockquote class="kf-quote" data-reveal>
           <p>"Maka kafarat (melanggar) sumpah itu ialah memberi makan sepuluh orang miskin…"</p>
           <cite>— QS. Al-Ma'idah: 89</cite>
@@ -118,12 +128,30 @@ const description = 'Masih memiliki kewajiban kafarat? Pelajari, hitung dengan k
       </div>
     </section>
 
-    <!-- APAKAH ANDA PERLU -->
+    <!-- KEUTAMAAN KAFARAT -->
     <section class="section-pad kf-alt">
+      <div class="container">
+        <div class="eyebrow"><span class="section-num">02 / Keutamaan</span></div>
+        <h2 class="kf-h2">Keutamaan Membayar Kafarat</h2>
+        <p style="color:var(--ink-2);margin-top:14px;max-width:60ch;">Menunaikan kafarat bukan sekadar menyelesaikan kewajiban, tetapi membawa kebaikan yang luas bagi diri sendiri maupun sesama.</p>
+        <div class="kf-virtues">
+          {keutamaan.map((k) => (
+            <div class="kf-virtue" data-reveal>
+              <span class="kf-virtue-n">{k.n}</span>
+              <h3>{k.t}</h3>
+              <p>{k.d}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <!-- APAKAH ANDA PERLU -->
+    <section class="section-pad">
       <div class="container">
         <div class="kf-split">
           <div data-reveal>
-            <div class="eyebrow"><span class="section-num">02 / Tanda</span></div>
+            <div class="eyebrow"><span class="section-num">03 / Tanda</span></div>
             <h2 class="kf-h2">Apakah Anda Perlu Membayar Kafarat?</h2>
             <p style="color:var(--ink-2);margin-top:14px;max-width:44ch;">Anda mungkin memiliki kewajiban kafarat apabila salah satu kondisi berikut terjadi.</p>
           </div>
@@ -139,22 +167,6 @@ const description = 'Masih memiliki kewajiban kafarat? Pelajari, hitung dengan k
         <div class="kf-band" data-reveal>
           <strong>Mengapa perlu segera ditunaikan?</strong>
           Kafarat yang belum ditunaikan tetap menjadi tanggungan seorang muslim. Menyelesaikannya adalah bentuk ketaatan kepada Allah SWT sekaligus menghadirkan ketenangan hati.
-        </div>
-      </div>
-    </section>
-
-    <!-- CONTOH PERHITUNGAN -->
-    <section class="section-pad">
-      <div class="container kf-narrow">
-        <div class="eyebrow"><span class="section-num">03 / Simulasi</span></div>
-        <h2 class="kf-h2">Contoh Perhitungan Kafarat</h2>
-        <p style="color:var(--ink-2);margin-top:14px;">Masih bingung berapa nilai kafarat yang harus ditunaikan? Berikut simulasi sederhana untuk memudahkan perhitungan.</p>
-        <div class="kf-example" data-reveal>
-          <p>Seseorang memiliki kewajiban <strong>kafarat jima'</strong> dan memilih menunaikannya dengan memberi makan fakir miskin.</p>
-          <div class="kf-example-row"><span>Memberi makan fakir miskin</span><span>60 orang</span></div>
-          <div class="kf-example-row"><span>Satu paket makanan (1 mud)</span><span>Rp15.000</span></div>
-          <div class="kf-example-row kf-example-total"><span>60 × Rp15.000</span><span>Rp900.000</span></div>
-          <p class="kf-example-note">Estimasi kafarat yang perlu ditunaikan adalah <strong>Rp900.000</strong>.</p>
         </div>
       </div>
     </section>
@@ -420,6 +432,14 @@ const description = 'Masih memiliki kewajiban kafarat? Pelajari, hitung dengan k
     }
     .kf-quote p { font-size: 18px; line-height: 1.6; color: var(--ink); font-style: italic; }
     .kf-quote cite { display: block; margin-top: 12px; font-style: normal; font-size: 14px; color: var(--ink-2); }
+    .kf-body { margin-top: 18px; line-height: 1.7; color: var(--ink-2); max-width: 60ch; }
+
+    /* VIRTUES GRID */
+    .kf-virtues { margin-top: 36px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+    .kf-virtue { position: relative; background: var(--paper); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 28px 24px; }
+    .kf-virtue-n { font-family: var(--font-mono); font-size: 13px; font-weight: 500; letter-spacing: 0.08em; color: var(--brand); }
+    .kf-virtue h3 { font-family: var(--font-display); font-weight: 700; font-size: 18px; line-height: 1.25; letter-spacing: -0.01em; color: var(--ink); margin: 10px 0 10px; }
+    .kf-virtue p { color: var(--ink-2); font-size: 14px; line-height: 1.6; }
 
     /* CHECK LIST */
     .kf-split { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(24px, 5vw, 64px); align-items: center; }
@@ -519,6 +539,7 @@ const description = 'Masih memiliki kewajiban kafarat? Pelajari, hitung dengan k
       /* Copy first on narrow screens; the poster follows below it. */
       .kf-hero-art { max-width: 420px; margin: 0 auto; }
       .kf-cards { grid-template-columns: repeat(2, 1fr); }
+      .kf-virtues { grid-template-columns: repeat(2, 1fr); }
       .kf-split, .kf-legal, .kf-quotes { grid-template-columns: 1fr; }
       .kf-split { gap: 24px; }
     }
@@ -532,6 +553,7 @@ const description = 'Masih memiliki kewajiban kafarat? Pelajari, hitung dengan k
     }
     @media (max-width: 480px) {
       .kf-cards { grid-template-columns: 1fr; }
+      .kf-virtues { grid-template-columns: 1fr; }
       .kf-gallery { grid-template-columns: 1fr; }
       .kf-hero-ctas .btn { width: 100%; justify-content: center; }
       .kf-band, .kf-example, .kf-calc { padding: 22px 20px; }
